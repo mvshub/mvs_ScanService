@@ -1,43 +1,41 @@
-from decimal import Decimal
-
+from services.ibusiness import IBusiness
 from services.address import AddressService
-import threading
-import time
-import logging
-from functools import partial
 from modles import process
 from modles.status import Status
 from modles import db
-from utils import response
-from modles.deposit import Deposit
+from modles.swap import Swap
 from modles.address import Address
+from utils import response
 from utils import notify
 from utils.timeit import timeit
-from services.ibusiness import IBusiness
+import threading
+import time
+import logging
+from decimal import Decimal
+from functools import partial
 
-
-class DepositBusiness(IBusiness):
+class ScanBusiness(IBusiness):
 
     def __init__(self, service, rpc, setting):
         IBusiness.__init__(self, service, rpc, setting)
         self.coin = setting['coin']
         self.addresses = set()
         self.status = 0
-        self.deposits = {}
+        self.swaps = {}
 
     @timeit
-    def load_to_notify_deposit(self):
-        ids = db.session.query(Deposit.tx_hash, Deposit.tx_index, Deposit.output_index).group_by(
-            Deposit.tx_hash, Deposit.tx_index, Deposit.output_index).having(db.func.count(Deposit.status) == 1).all()
+    def load_to_notify_swap(self):
+        ids = db.session.query(Swap.tx_hash, Swap.tx_index, Swap.output_index).group_by(
+            Swap.tx_hash, Swap.tx_index, Swap.output_index).having(db.func.count(Swap.status) == 1).all()
 
         for id_ in ids:
-            dep = db.session.query(Deposit).filter_by(
-                tx_hash=id_[0], tx_index=id_[1], output_index=id_[2]).filter_by(asset=self.coin).first()
+            dep = db.session.query(Swap).filter_by(
+                tx_hash=id_[0], tx_index=id_[1], output_index=id_[2]).filter_by(coin=self.coin).first()
             if not dep:
                 continue
             dep.status = process.PROCESS_DEPOSIT_NOTIFY
             dep.tx_time = 0
-            self.deposits[dep.iden] = Deposit.copy(dep)
+            self.swaps[dep.iden] = Swap.copy(dep)
 
     @timeit
     def process_notify(self):
@@ -48,7 +46,7 @@ class DepositBusiness(IBusiness):
         except Exception as e:
             return True
 
-        for i, d in self.deposits.items():
+        for i, d in self.swaps.items():
             if d.tx_time is None:
                 d.tx_time = 0
             if (t - d.tx_time) < self.setting['retry_interval']:
@@ -59,12 +57,12 @@ class DepositBusiness(IBusiness):
             d.tx_time = t
             try:
                 import copy
-                d1 = Deposit.copy(d)
+                d1 = Swap.copy(d)
                 d1.amount = self.rpc.from_wei(d1.amount)
                 notify.notify_deposit(
                     d1, self.service.best_block_number, self.setting['feedback'])
             except Exception as e:
-                logging.error('%s notify deposit failed,%s,%s' %
+                logging.error('%s notify swap failed,%s,%s' %
                               (self.coin, e, d))
                 continue
 
@@ -72,21 +70,23 @@ class DepositBusiness(IBusiness):
             d.status = process.PROCESS_DEPOSIT_NOTIFY
             db.session.add(d)
             db.session.commit()
-            self.deposits[i] = Deposit.copy(d)
-            logging.info('%s notify deposit success,%s' % (self.coin, d))
+
+            self.swaps[i] = Swap.copy(d)
+            logging.info('%s notify swap success,%s' % (self.coin, d))
             finished_notifies.append(i)
 
         for i in finished_notifies:
-            self.deposits.pop(i)
+            self.swaps.pop(i)
         return True
 
     @timeit
     def load_status(self):
-        s = db.session.query(Status).filter_by(asset=self.coin).first()
+        s = db.session.query(Status).filter_by(coin=self.coin).first()
         if not s:
             s = Status()
-            s.asset = self.coin
+            s.coin = self.coin
             s.height = 1
+
             db.session.add(s)
             db.session.commit()
         self.status = s.height
@@ -94,53 +94,53 @@ class DepositBusiness(IBusiness):
     @timeit
     def load_address(self):
         addresses = db.session.query(Address).filter_by(
-            asset=self.coin, inuse=1).all()
-        self.addresses.update([a.display for a in addresses])
+            coin=self.coin, inuse=1).all()
+        self.addresses.update([a.address for a in addresses])
         for a in addresses:
-            logging.info("load addresses: {}".format(a.display))
+            logging.info("load addresses: {}".format(a.address))
 
     @timeit
     def on_address_change(self):
         self.post(self.load_address)
 
     @timeit
-    def process_deposits(self):
+    def process_swaps(self):
         pass
 
     @timeit
-    def commit_deposit(self, deposit):
-        r = db.session.query(Deposit).filter_by(
-            asset=self.coin, tx_hash=deposit['hash'],
-            tx_index=deposit['index'],
-            output_index=deposit.get('output_index')).first()
+    def commit_swap(self, swap):
+        r = db.session.query(Swap).filter_by(
+            coin=self.coin, tx_hash=swap['hash'],
+            tx_index=swap['index'],
+            output_index=swap.get('output_index')).first()
         if r:
-            logging.info('deposit already existed')
+            logging.info('swap already existed')
             return
 
-        dep = Deposit()
-        dep.asset = self.coin
-        dep.address = deposit['to']
-        dep.amount = deposit['amount']
-        dep.block_height = deposit['height']
+        dep = Swap()
+        dep.coin = self.coin
+        dep.address = swap['to']
+        dep.amount = swap['amount']
+        dep.block_height = swap['height']
         dep.status = process.PROCESS_DEPOSIT_NEW
-        dep.tx_hash = deposit['hash']
-        dep.tx_index = deposit['index']
-        dep.output_index = deposit.get('output_index')
-        dep.create_time = deposit['time']
+        dep.tx_hash = swap['hash']
+        dep.tx_index = swap['index']
+        dep.output_index = swap.get('output_index')
+        dep.create_time = swap['time']
         db.session.add(dep)
         db.session.flush()
         # print(dep.tx_hash)
         db.session.commit()
 
-        self.deposits[dep.iden] = Deposit.copy(dep)
+        self.swaps[dep.iden] = Swap.copy(dep)
 
     @timeit
-    def commit_deposits(self, deposits):
-        for d in deposits:
-            self.commit_deposit(d)
+    def commit_swaps(self, swaps):
+        for d in swaps:
+            self.commit_swap(d)
 
     @timeit
-    def process_deposit(self):
+    def process_scan(self):
         rpc = self.rpc
         try:
             best_block_number = self.service.best_block_number
@@ -152,31 +152,31 @@ class DepositBusiness(IBusiness):
             return True
 
         block = rpc.get_block_by_height(self.status)
-        deposits = []
+        swaps = []
         for tx in block['txs']:
-            existed = [x for x in self.addresses if rpc.is_deposit(tx, x)]
+            existed = [x for x in self.addresses if rpc.is_swap(tx, x)]
             if len(existed):
-                deposits.extend([tx])
-                logging.info('new deposit found, block height: {}, value: {}, to: {}'.format(
+                swaps.extend([tx])
+                logging.info('new swap found, block height: {}, value: {}, to: {}'.format(
                     tx['blockNumber'], tx['value'], tx['to']))
 
         if len(block['txs']) > 0:
-            logging.info(" > scan block {} : {} txs, {} deposits".format(
-                self.status, len(block['txs']), len(deposits)))
+            logging.info(" > scan block {} : {} txs, {} swaps".format(
+                self.status, len(block['txs']), len(swaps)))
 
-        if deposits:
-            logging.info('new deposit found, %s' % deposits)
+        if swaps:
+            logging.info('new swap found, %s' % swaps)
 
-        for d in deposits:
+        for d in swaps:
             d['amount'] = d['value']
             d['height'] = int(d['blockNumber'])
-        self.commit_deposits(deposits)
+        self.commit_swaps(swaps)
 
-        if deposits or self.status % 50 == 0:
-            s = db.session.query(Status).filter_by(asset=self.coin).first()
+        if swaps or self.status % 50 == 0:
+            s = db.session.query(Status).filter_by(coin=self.coin).first()
             if not s:
                 s = Status()
-                s.asset = self.coin
+                s.coin = self.coin
             s.height = self.status
             db.session.add(s)
             db.session.commit()
@@ -188,6 +188,6 @@ class DepositBusiness(IBusiness):
         IBusiness.start(self)
         self.post(self.load_address)
         self.post(self.load_status)
-        self.post(self.load_to_notify_deposit)
-        self.post(self.process_deposit)
+        self.post(self.load_to_notify_swap)
+        self.post(self.process_scan)
         self.post(self.process_notify)

@@ -13,6 +13,9 @@ class Etp(Base):
     def __init__(self, settings):
         Base.__init__(self, settings)
         self.name = 'ETP'
+        self.tokens = settings['tokens']
+        self.token_names = [x['name'] for x in self.tokens]
+        logging.info("init type {}, tokens: {}".format(self.name, self.token_names))
 
     def start(self):
         self.best_block_number()
@@ -55,35 +58,43 @@ class Etp(Base):
             input_addresses = [input_['address'] for input_ in tx[
                 'inputs'] if input_.get('address') is not None]
             for j, output in enumerate(tx['outputs']):
-                output['to'] = '' if output.get(
-                    'address') is None else output['address']
-                output['blockNumber'] = height
-                output['value'] = int(output['value'])
-                output['type'] = 'ETP'
-                output['hash'] = tx['hash']
-                output['index'] = i
-                output['output_index'] = j
-                output['time'] = int(timestamp)
-                output['input_addresses'] = input_addresses
-                txs.append(output)
-                if output['attachment']['type'] == 'asset-transfer':
-                    import copy
-                    o = copy.copy(output)
-                    o['type'] = output['attachment']['symbol']
-                    o['value'] = int(output['attachment']['quantity'])
-                    txs.append(o)
+                if output['attachment']['type'] != 'asset-transfer':
+                    continue
 
+                to_addr = '' if output.get('address') is None else output['address']
+                tx = {}
+                tx['type'] = 'ETP'
+                tx['blockNumber'] = height
+                tx['index'] = i
+                tx['hash'] = tx['hash']
+                tx['to'] = to_addr
+                tx['output_index'] = j
+                tx['time'] = int(timestamp)
+                tx['input_addresses'] = input_addresses
+                tx['token'] = output['attachment']['symbol']
+                tx['value'] = int(output['attachment']['quantity'])
+                # tx['value'] = int(output['value'])
+
+                txs.append(tx)
+                logging.info("transfer {}, height: {}".format(tx['token'], tx['blockNumber']))
+
+        logging.info(" > get block {}, {} txs".format(height, len(transactions)))
         res['txs'] = txs
         return res
 
-    def is_deposit(self, tx, addresses):
+    def is_swap(self, tx, addresses):
         if tx['type'] != self.name:
             return False
         if tx['value'] <= 0:
             return False
+        if tx['token'] is None:
+            return False
 
+        if tx['token'] not in self.token_names:
+            return False
         if set(tx['input_addresses']).intersection(set(addresses)):
             return False
+
         if tx['script'].find('numequalverify') < 0 and tx['to'] in addresses:
             return True
         return False
@@ -98,6 +109,11 @@ class Etp(Base):
         if addresses is not None and len(addresses) > 0:
             return addresses[0]
         return None
+
+    def get_addresses(self, account, passphase):
+        res = self.make_request('listaddresses', [account, passphase])
+        addresses = res['result']
+        return addresses
 
     def best_block_number(self):
         res = self.make_request('getheight')

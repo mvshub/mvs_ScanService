@@ -1,12 +1,11 @@
 from services.iserver import IService
-from services.withdraw import WithdrawService
-from services.deposit import DepositService
+from services.scan import ScanService
+from rpcs.rpcmanager import RpcManager
 from utils import response
 from flask import Flask, jsonify
 from flask_migrate import Migrate, MigrateCommand
 import sqlalchemy_utils
 from modles import db
-from rpcs.rpcmanager import RpcManager
 from gevent.pywsgi import WSGIServer
 from gevent import monkey
 import logging
@@ -95,11 +94,9 @@ class WalletService(IService):
         self.setup_db()
         self.rpcmanager.start()
 
-        self.deposit = DepositService(
-            self.app, self.rpcmanager, self.settings['deposits'])
-        # self.withdraw = WithdrawService(self.app, self.rpcmanager, self.settings['withdraws'])
-        self.deposit.start()
-        # self.withdraw.start()
+        self.scan = ScanService(
+            self.app, self.rpcmanager, self.settings['scans'])
+        self.scan.start()
 
         self.http = WSGIServer(
             (self.settings['host'], self.settings['port']), self.app.wsgi_app)
@@ -110,7 +107,6 @@ class WalletService(IService):
     def stop(self):
         if hasattr(self, 'http'):
             self.http.stop()
-        if hasattr(self, 'deposit'):
-            self.deposit.stop()
-        if hasattr(self, 'withdraw'):
-            self.withdraw.stop()
+
+        if hasattr(self, 'scan'):
+            self.scan.stop()

@@ -70,6 +70,11 @@ class Eth(Base):
         res = self.make_request('personal_newAccount', [passphase])
         return res
 
+    def get_addresses(self, account, passphase):
+        # TODO
+        res = self.make_request('', [passphase])
+        return res
+
     def estimate_gas(self, options):
         res = self.make_request('eth_estimateGas', [options])
         return int(res, 16)
