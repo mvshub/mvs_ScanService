@@ -45,7 +45,7 @@ class Etp(Base):
 
     def get_balance(self, address):
         res = self.make_request('getaddressetp', [address])
-        return res[result]['unspent']
+        return res['result']['unspent']
 
     def get_block_by_height(self, height, addresses):
         res = self.make_request('getblockheader', ['-t', int(height)])
