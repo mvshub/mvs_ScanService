@@ -1,10 +1,10 @@
 from services.address import AddressService
-import logging
+from services.scanbusiness import ScanBusiness
 from utils import response
 from modles.swap import Swap
-from services.scanbusiness import ScanBusiness
 from modles import process
 from modles import db
+import logging
 
 
 class ScanService(AddressService):
@@ -31,7 +31,7 @@ class ScanService(AddressService):
 
             logging.info(
                 "start ScanBusiness for {}, height: {}, with setting {}".format(
-                coin, self.best_block_number, d))
+                    coin, self.best_block_number, d))
 
             self.get_best_block_number(rpc)
 
@@ -47,23 +47,6 @@ class ScanService(AddressService):
 
     def stop(self):
         AddressService.stop(self)
-
-    # def process_get_transaction(self, rpc, setting, txid):
-    #     try:
-    #         res = rpc.get_transaction(txid)
-    #     except Exception as e:
-    #         return response.make_response(response.ERR_BAD_PARAMETER, '%s' % e)
-    #     return response.make_response(result=res)
-
-    # def process_get_scan(self, rpc, setting, address, page, limit=10):
-    #     if not rpc.is_address_valid(address):
-    #         return response.make_response(response.ERR_INVALID_ADDRESS)
-    #     ds = db.session.query(Swap).filter_by(
-    #         address=address, asset=rpc.name,
-    #         status=process.PROCESS_DEPOSIT_NEW).limit(limit).offset(page * limit).all()
-    #     ds = [{'deposit_id': d.iden, 'asset': d.asset, 'amount': d.amount,
-    #            'to_address': d.address, 'txid': d.tx_hash, 'height': d.block_height} for d in ds]
-    #     return response.make_response(result=ds)
 
     def process_get_block_number(self, rpc, setting):
         self.get_best_block_number(rpc)

@@ -14,6 +14,7 @@ import logging
 from decimal import Decimal
 from functools import partial
 
+
 class ScanBusiness(IBusiness):
 
     def __init__(self, service, rpc, setting):
@@ -29,13 +30,13 @@ class ScanBusiness(IBusiness):
             Swap.tx_hash, Swap.tx_index, Swap.output_index).having(db.func.count(Swap.status) == 1).all()
 
         for id_ in ids:
-            dep = db.session.query(Swap).filter_by(
+            swap = db.session.query(Swap).filter_by(
                 tx_hash=id_[0], tx_index=id_[1], output_index=id_[2]).filter_by(coin=self.coin).first()
-            if not dep:
+            if not swap:
                 continue
-            dep.status = process.PROCESS_DEPOSIT_NOTIFY
-            dep.tx_time = 0
-            self.swaps[dep.iden] = Swap.copy(dep)
+            swap.status = process.PROCESS_DEPOSIT_NOTIFY
+            swap.tx_time = 0
+            self.swaps[swap.iden] = Swap.copy(swap)
 
     @timeit
     def process_notify(self):
@@ -46,33 +47,33 @@ class ScanBusiness(IBusiness):
         except Exception as e:
             return True
 
-        for i, d in self.swaps.items():
-            if d.tx_time is None:
-                d.tx_time = 0
-            if (t - d.tx_time) < self.setting['retry_interval']:
+        for i, swap in self.swaps.items():
+            if swap.tx_time is None:
+                swap.tx_time = 0
+            if (t - swap.tx_time) < self.setting['retry_interval']:
                 continue
-            if (best_block_height - d.block_height + 1) < self.setting['minconf']:
+            if (best_block_height - swap.block_height + 1) < self.setting['minconf']:
                 continue
 
-            d.tx_time = t
+            swap.tx_time = t
             try:
                 import copy
-                d1 = Swap.copy(d)
-                d1.amount = self.rpc.from_wei(d1.amount)
-                notify.notify_deposit(
-                    d1, self.service.best_block_number, self.setting['feedback'])
+                dup = Swap.copy(swap)
+                dup.amount = self.rpc.from_wei(dup.amount)
+                notify.notify_swap(
+                    dup, self.service.best_block_number, self.setting['feedback'])
             except Exception as e:
                 logging.error('%s notify swap failed,%s,%s' %
-                              (self.coin, e, d))
+                              (self.coin, e, swap))
                 continue
 
-            d.iden = None
-            d.status = process.PROCESS_DEPOSIT_NOTIFY
-            db.session.add(d)
+            swap.iden = None
+            swap.status = process.PROCESS_DEPOSIT_NOTIFY
+            db.session.add(swap)
             db.session.commit()
 
-            self.swaps[i] = Swap.copy(d)
-            logging.info('%s notify swap success,%s' % (self.coin, d))
+            self.swaps[i] = Swap.copy(swap)
+            logging.info('%s notify swap success,%s' % (self.coin, swap))
             finished_notifies.append(i)
 
         for i in finished_notifies:
@@ -117,27 +118,29 @@ class ScanBusiness(IBusiness):
             logging.info('swap already existed')
             return
 
-        dep = Swap()
-        dep.coin = self.coin
-        dep.address = swap['to']
-        dep.amount = swap['amount']
-        dep.block_height = swap['height']
-        dep.status = process.PROCESS_DEPOSIT_NEW
-        dep.tx_hash = swap['hash']
-        dep.tx_index = swap['index']
-        dep.output_index = swap.get('output_index')
-        dep.create_time = swap['time']
-        db.session.add(dep)
+        item = Swap()
+        item.coin = self.coin
+        item.to_address = swap['swap_address']
+        item.token = swap['token']
+        item.amount = swap['amount']
+        item.block_height = swap['height']
+        item.tx_hash = swap['hash']
+        item.tx_index = swap['index']
+        item.output_index = swap.get('output_index')
+        item.create_time = swap['time']
+        item.status = process.PROCESS_DEPOSIT_NEW
+
+        db.session.add(item)
         db.session.flush()
-        # print(dep.tx_hash)
+        # print(item.tx_hash)
         db.session.commit()
 
-        self.swaps[dep.iden] = Swap.copy(dep)
+        self.swaps[item.iden] = Swap.copy(item)
 
     @timeit
     def commit_swaps(self, swaps):
-        for d in swaps:
-            self.commit_swap(d)
+        for swap in swaps:
+            self.commit_swap(swap)
 
     @timeit
     def process_scan(self):
@@ -151,25 +154,16 @@ class ScanBusiness(IBusiness):
         if not self.addresses:
             return True
 
-        block = rpc.get_block_by_height(self.status)
+        block = rpc.get_block_by_height(self.status, self.addresses)
         swaps = []
         for tx in block['txs']:
-            existed = [x for x in self.addresses if rpc.is_swap(tx, x)]
-            if len(existed):
+            if rpc.is_swap(tx, self.addresses):
                 swaps.extend([tx])
-                logging.info('new swap found, block height: {}, value: {}, to: {}'.format(
-                    tx['blockNumber'], tx['value'], tx['to']))
+                logging.info('new swap found: %s' % tx)
 
-        if len(block['txs']) > 0:
-            logging.info(" > scan block {} : {} txs, {} swaps".format(
-                self.status, len(block['txs']), len(swaps)))
-
-        if swaps:
-            logging.info('new swap found, %s' % swaps)
-
-        for d in swaps:
-            d['amount'] = d['value']
-            d['height'] = int(d['blockNumber'])
+        for swap in swaps:
+            swap['amount'] = swap['value']
+            swap['height'] = int(swap['blockNumber'])
         self.commit_swaps(swaps)
 
         if swaps or self.status % 50 == 0:

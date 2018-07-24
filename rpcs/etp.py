@@ -47,38 +47,47 @@ class Etp(Base):
         res = self.make_request('getaddressetp', [address])
         return res[result]['unspent']
 
-    def get_block_by_height(self, height):
+    def get_block_by_height(self, height, addresses):
         res = self.make_request('getblockheader', ['-t', int(height)])
         block_hash = res['result']['hash']
         res = self.make_request('getblock', [block_hash, 'true'])
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
-        txs = []
-        for i, tx in enumerate(transactions):
-            input_addresses = [input_['address'] for input_ in tx[
-                'inputs'] if input_.get('address') is not None]
-            for j, output in enumerate(tx['outputs']):
-                if output['attachment']['type'] != 'asset-transfer':
-                    continue
-
-                to_addr = '' if output.get('address') is None else output['address']
-                tx = {}
-                tx['type'] = 'ETP'
-                tx['blockNumber'] = height
-                tx['index'] = i
-                tx['hash'] = tx['hash']
-                tx['to'] = to_addr
-                tx['output_index'] = j
-                tx['time'] = int(timestamp)
-                tx['input_addresses'] = input_addresses
-                tx['token'] = output['attachment']['symbol']
-                tx['value'] = int(output['attachment']['quantity'])
-                # tx['value'] = int(output['value'])
-
-                txs.append(tx)
-                logging.info("transfer {}, height: {}".format(tx['token'], tx['blockNumber']))
-
         logging.info(" > get block {}, {} txs".format(height, len(transactions)))
+
+        txs = []
+        for i, trans in enumerate(transactions):
+            input_addresses = [input_['address'] for input_ in trans[
+                'inputs'] if input_.get('address') is not None]
+
+            tx = {}
+            for j, output in enumerate(trans['outputs']):
+                to_addr = '' if output.get('address') is None else output['address']
+
+                if output['attachment']['type'] == 'asset-transfer':
+                    if to_addr not in addresses:
+                        continue
+
+                    tx['type'] = 'ETP'
+                    tx['blockNumber'] = height
+                    tx['index'] = i
+                    tx['hash'] = trans['hash']
+                    tx['to'] = to_addr
+                    tx['output_index'] = j
+                    tx['time'] = int(timestamp)
+                    tx['input_addresses'] = input_addresses
+                    tx['script'] = output['script']
+                    tx['token'] = output['attachment']['symbol']
+                    tx['value'] = int(output['attachment']['quantity'])
+
+                elif output['attachment']['type'] == 'message':
+                    tx['swap_address'] = output['attachment']['content']
+
+            if tx.get('token') is not None and tx.get('swap_address') is not None:
+                txs.append(tx)
+                logging.info("transfer {} - {}, height: {}, swap_address: {}".format(
+                    tx['token'], tx['value'], tx['blockNumber'], tx['swap_address']))
+
         res['txs'] = txs
         return res
 

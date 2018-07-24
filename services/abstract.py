@@ -6,7 +6,6 @@ import json
 from utils.parameter import parameter_check
 # from modles import process, db
 import time
-from modles.withdraw import Withdraw
 from modles.address import Address
 import logging
 from sqlalchemy import create_engine

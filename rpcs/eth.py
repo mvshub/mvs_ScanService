@@ -36,7 +36,7 @@ class Eth(Base):
         res = self.make_request('eth_getBalance', [address])
         return int(res, 16)
 
-    def get_block_by_height(self, height):
+    def get_block_by_height(self, height, addresses):
         logging.info(">>>>>>>>>> ETH : get_block_by_height")
         block = self.make_request('eth_getBlockByNumber', [hex(int(height)), True])
         block['txs'] = block['transactions']
