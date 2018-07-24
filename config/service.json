@@ -4,7 +4,7 @@
     "mysql_host":"127.0.0.1",
     "mysql_port":3306,
     "mysql_user":"root",
-    "mysql_passwd":"root123456",
+    "mysql_passwd":"123456",
     "mysql_db":"wallet",
     "privkey_path":"~/keys/private.pem",
     "pubkey_path":"~/keys/public.pem",
@@ -22,7 +22,29 @@
                     "decimal": 8
                 }
             ]
+        },
+        {
+            "id":2,
+            "name":"ETH",
+            "contract_address":"0x852160a3dee511bbae2df47f0a322845e96017af",
+            "contract_mapaddress":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
+            "type":"rpcs.eth_token.EthToken",
+            "host":"10.10.10.175",
+            "port":8545,
+            "tokens": [
+                {
+                    "name":"ABC",
+                    "enable":true,
+                    "decimal": 5
+                },
+                {
+                    "name":"SMT",
+                    "enable":true,
+                    "decimal": 4
+                }
+            ]
         }
+
     ],
     "scans":{
         "mails":[],
@@ -34,9 +56,18 @@
                 "coin":"ETP",
                 "feedback":"http://127.0.0.1:8005/swap",
                 "retry_interval":300,
-                "enable":true,
-                "account":"testswap",
-                "passphrase":"testswap"
+                "enable":false,
+                "account":"test1",
+                "passphrase":"test1"
+            },
+            {
+                "coin":"ETH",
+                "rpc":2,
+                "minconf":12,
+                "feedback":"http://127.0.0.1:8081/test",
+                "retry_interval":300,
+                "passphrase":"xiao123456",
+                "enable":true
             }
         ]
     }

@@ -2,6 +2,7 @@ from rpcs.eth import Eth
 import decimal
 import logging
 from utils.exception import TransactionNotfoundException
+import binascii
 
 
 class EthToken(Eth):
@@ -10,8 +11,11 @@ class EthToken(Eth):
         Eth.__init__(self, settings)
         self.name = settings['name']
         self.contract_address = settings['contract_address']
-        logging.info("EthToken: contract_address: {}".format(
-            self.contract_address))
+        self.contract_mapaddress = settings['contract_mapaddress']
+        self.tokens = settings['tokens']
+        self.token_names = [x['name'] for x in self.tokens]
+        logging.info("EthToken: contract_address: {}, contract_mapaddress".format(
+            self.contract_address, self.contract_mapaddress))
 
     def start(self):
         Eth.start(self)
@@ -39,6 +43,17 @@ class EthToken(Eth):
         balance = self.make_request(
             'eth_call', [{'to': self.contract_address, 'data': data}, 'latest'])
         return int(balance['result'], 16)
+
+    def symbol(self):
+        data = '0x95d89b41'
+        symbol = self.make_request(
+            'eth_call', [{'to': self.contract_address, 'data': data}, 'latest'])
+
+        if len(symbol) != 194:
+            return ""
+
+        strLen = int('0x' + symbol[126:130], 16)    
+        return str(binascii.unhexlify(symbol[130:194])[:strLen], "utf-8")
 
     def transfer(self, passphrase, from_address, to_address, amount):  # maybe failed
         if len(to_address) == 42:
@@ -74,14 +89,26 @@ class EthToken(Eth):
             return
         return res
 
-    def get_block_by_height(self, height):
+    def is_swap(self, tx, addresses):
+        if 'type' not in tx  or tx['type'] != self.name:
+            return False
+
+        if tx['value'] <= 0:
+            return False
+        if tx['token'] is None or tx['token'] not in self.token_names:
+            return False
+
+        return True
+
+
+
+    def get_block_by_height(self, height, addresses):
         block = self.make_request(
             'eth_getBlockByNumber', [hex(int(height)), True])
 
         block['txs'] = block['transactions']
         for i, tx in enumerate(block['txs']):
-            logging.info("get_tx: {}".format(tx))
-            if tx['to'] is None or tx['to'] != self.contract_address:
+            if tx['to'] is None or tx['to'] not in (self.contract_address, self.contract_mapaddress):
                 tx['to'] = 'create contract'
                 continue
 
@@ -93,15 +120,27 @@ class EthToken(Eth):
             tx['index'] = i
             tx['blockNumber'] = int(tx['blockNumber'], 16)
             tx['time'] = int(block['timestamp'], 16)
-            input_ = tx['input']
-            if len(input_) != 138:
-                continue
+            tx['isBinder'] = False
+            tx['type'] = 'ETH'
 
-            value = int('0x' + input_[74:], 16)
-            to_addr = '0x' + input_[34:74]
-            logging.info("input_: {}, to: {}, value: {}".format(
-                input_, to_addr, value))
-            tx['to'] = to_addr
-            tx['value'] = value
-            tx['amount'] = value
+            input_ = tx['input']
+            if tx['to'] == self.contract_address:
+                if len(input_) != 138:
+                    continue
+                value = int('0x' + input_[74:], 16)
+                to_addr = '0x' + input_[34:74]
+                tx['swap_address'] = to_addr
+                tx['value'] = value
+                tx['amount'] = value
+                tx['token'] = self.symbol()
+
+            else:
+                if len(input_) != 202:
+                    continue
+                strLen = int('0x' + input_[134:138], 16)
+                tx['to'] = binascii.unhexlify(input_[138:202])[:strLen]
+
+                tx['isBinder'] = True
+                logging.info('new binder found, from:%s, to:%s' % (tx['from'], tx['to']))
+
         return block

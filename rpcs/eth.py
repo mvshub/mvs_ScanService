@@ -9,6 +9,7 @@ class Eth(Base):
     def __init__(self, settings):
         Base.__init__(self, settings)
         self.name = 'ETH' if settings.get('name') is None else settings['name']
+        self.contract_mapaddress = settings['contract_mapaddress']
 
     def start(self):
         self.best_block_number()
@@ -47,6 +48,8 @@ class Eth(Base):
             tx['value'] = int(tx['value'], 16)
             tx['amount'] = tx['value']
             tx['to'] = 'create contract' if tx['to'] is None else tx['to']
+            tx['isBinder'] = False
+
         return block
 
     def is_deposit(self, tx, addresses):
@@ -71,8 +74,7 @@ class Eth(Base):
         return res
 
     def get_addresses(self, account, passphase):
-        # TODO
-        res = self.make_request('', [passphase])
+        res = self.make_request('eth_accounts', [])
         return res
 
     def estimate_gas(self, options):

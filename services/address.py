@@ -27,16 +27,16 @@ class AddressService(AbstractService):
 
         # generate new addresses
         addresses = rpc.get_addresses(account, passphrase)
-        to_generate_size = MAX_ADDRESS_SIZE - len(addresses)
-
-        for i in range(to_generate_size):
-            try:
-                if self.stopped:
-                    return False
-                addr = rpc.new_address(account, passphrase)
-            except Exception as e:
-                logging.error(
-                    'failed to generate new address for %s,%s' % (rpc.name, e))
+        if(len(addresses) < MAX_ADDRESS_SIZE):
+            to_generate_size = MAX_ADDRESS_SIZE - len(addresses)
+            for i in range(to_generate_size):
+                try:
+                    if self.stopped:
+                        return False
+                    addr = rpc.new_address(account, passphrase)
+                except Exception as e:
+                    logging.error(
+                        'failed to generate new address for %s,%s' % (rpc.name, e))
 
         # add to database
         addresses = rpc.get_addresses(account, passphrase)

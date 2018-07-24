@@ -5,6 +5,7 @@ from modles.status import Status
 from modles import db
 from modles.swap import Swap
 from modles.address import Address
+from modles.binder import Binder
 from utils import response
 from utils import notify
 from utils.timeit import timeit
@@ -137,10 +138,35 @@ class ScanBusiness(IBusiness):
 
         self.swaps[item.iden] = Swap.copy(item)
 
+
     @timeit
     def commit_swaps(self, swaps):
         for swap in swaps:
             self.commit_swap(swap)
+
+    @timeit
+    def commit_binder(self, binder_):
+        r = db.session.query(Binder).filter_by(tx_hash=binder_['hash']).all()
+        if r:
+            logging.info('binder already existed,from: %s, to: %s , tx_hash: %s' % (binder_['from'],binder_['to'],binder_['hash']))
+            return
+            
+        binder = Binder()
+        binder.binder = binder_['from']
+        binder.to = binder_['to']
+        binder.block_height = binder_['height']
+        binder.tx_hash = binder_['hash']
+        binder.create_time = binder_['time']
+
+        db.session.add(binder)
+        db.session.flush()
+        db.session.commit()
+
+
+    @timeit
+    def commit_binders(self, binders):
+        for bd in binders:
+            self.commit_binder(bd)
 
     @timeit
     def process_scan(self):
@@ -156,8 +182,12 @@ class ScanBusiness(IBusiness):
 
         block = rpc.get_block_by_height(self.status, self.addresses)
         swaps = []
+        binders=[]
         for tx in block['txs']:
-            if rpc.is_swap(tx, self.addresses):
+            if 'isBinder' in tx and tx['isBinder'] == True:
+                binders.extend([tx])
+                logging.info(' binder address, from:%s, to:%s' % (tx['from'], tx['to']))
+            elif  rpc.is_swap(tx, self.addresses):
                 swaps.extend([tx])
                 logging.info('new swap found: %s' % tx)
 
@@ -165,6 +195,14 @@ class ScanBusiness(IBusiness):
             swap['amount'] = swap['value']
             swap['height'] = int(swap['blockNumber'])
         self.commit_swaps(swaps)
+
+        for bd in binders:
+            bd['height'] = int(bd['blockNumber'])
+        self.commit_binders(binders)
+
+        logging.info("> scan block {} : {} txs, {} swaps, {} binders".format(
+            self.status, len(block['txs']), len(swaps),len(binders)))
+
 
         if swaps or self.status % 50 == 0:
             s = db.session.query(Status).filter_by(coin=self.coin).first()
