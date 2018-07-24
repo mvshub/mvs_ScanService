@@ -24,23 +24,27 @@
             ]
         },
         {
-            "id":2,
-            "name":"ETH",
-            "contract_address":"0x852160a3dee511bbae2df47f0a322845e96017af",
+            "id": 2,
+            "name": "ETH",
             "contract_mapaddress":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
+            "decimal": 8,
+            "type": "rpcs.eth.Eth",
+            "host":"10.10.10.175",
+            "port":8545
+        },
+        {
+            "id":3,
+            "name":"ETHToken",
             "type":"rpcs.eth_token.EthToken",
             "host":"10.10.10.175",
             "port":8545,
             "tokens": [
                 {
                     "name":"ABC",
+                    "contract_address":"0x852160a3dee511bbae2df47f0a322845e96017af",
+                    "contract_mapaddress":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
                     "enable":true,
                     "decimal": 5
-                },
-                {
-                    "name":"SMT",
-                    "enable":true,
-                    "decimal": 4
                 }
             ]
         }
@@ -61,13 +65,22 @@
                 "passphrase":"test1"
             },
             {
-                "coin":"ETH",
                 "rpc":2,
+                "coin":"ETH",
                 "minconf":12,
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
                 "enable":true
+            },
+            {
+                "rpc":3,
+                "coin":"ETHToken",
+                "minconf":12,
+                "feedback":"http://127.0.0.1:8081/test",
+                "retry_interval":300,
+                "passphrase":"xiao123456",
+                "enable":false
             }
         ]
     }

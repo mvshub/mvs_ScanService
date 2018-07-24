@@ -5,10 +5,10 @@ class Base:
         self.settings = settings
         self.name = ''
 
-    def get_balance(self, address):
+    def get_balance(self, name,address):
         pass
 
-    def is_deposit(self, tx, addresses):
+    def is_deposit(self, name, tx, addresses):
         pass
 
     def get_transaction(self, txid):
@@ -20,7 +20,7 @@ class Base:
     def is_address_required(self):
         return True
 
-    def transfer(self, from_, to_, amount):
+    def transfer(self, name, from_, to_, amount):
         pass
 
     def start(self):

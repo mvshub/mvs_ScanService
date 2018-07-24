@@ -43,7 +43,7 @@ class Etp(Base):
             pass
         return res.text
 
-    def get_balance(self, address):
+    def get_balance(self, name, address):
         res = self.make_request('getaddressetp', [address])
         return res['result']['unspent']
 

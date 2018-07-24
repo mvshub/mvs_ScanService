@@ -4,10 +4,12 @@ from utils.exception import RpcException, CriticalException
 import json
 import decimal
 import logging
+import binascii
 
 class Eth(Base):
     def __init__(self, settings):
         Base.__init__(self, settings)
+        print (settings)
         self.name = 'ETH' if settings.get('name') is None else settings['name']
         self.contract_mapaddress = settings['contract_mapaddress']
 
@@ -33,26 +35,59 @@ class Eth(Base):
         #     raise RpcException('bad response content, no result found,%s' % js)
         return js['result']
 
-    def get_balance(self, address):
+    def get_balance(self, name, address):
         res = self.make_request('eth_getBalance', [address])
         return int(res, 16)
 
     def get_block_by_height(self, height, addresses):
         logging.info(">>>>>>>>>> ETH : get_block_by_height")
         block = self.make_request('eth_getBlockByNumber', [hex(int(height)), True])
-        block['txs'] = block['transactions']
-        for i, tx in enumerate(block['txs']):
+        block['txs'] = []
+        for i, tx in enumerate(block['transactions']):
             tx['index'] = i
             tx['blockNumber'] = int(tx['blockNumber'], 16)
             tx['time'] = int(block['timestamp'], 16)
             tx['value'] = int(tx['value'], 16)
             tx['amount'] = tx['value']
-            tx['to'] = 'create contract' if tx['to'] is None else tx['to']
             tx['isBinder'] = False
+            tx['type'] = self.name
+            if tx['to'] is None :
+                continue          
+            elif tx['to'] == self.contract_mapaddress:
+                import pdb; pdb.set_trace()
+                input_ = tx['input']
+                if len(input_) != 202:
+                    continue
+                strLen = int('0x' + input_[134:138], 16)
+                tx['to'] = str(binascii.unhexlify(input_[138:202])[:strLen], "utf-8")
+
+                tx['isBinder'] = True
+                logging.info('new binder found, from:%s, to:%s' % (tx['from'], tx['to']))
+            else:
+                import pdb; pdb.set_trace()
+                if  tx['to'] not in addresses:
+                    continue
+                
+                tx['swap_address'] = tx['to']
+                tx['token'] = 'ETH'
+
+            block['txs'].append(tx)
+
 
         return block
+    
+    def is_swap(self, tx, addresses):
+        if 'type' not in tx  or tx['type'] != self.name:
+            return False
 
-    def is_deposit(self, tx, addresses):
+        if tx['value'] <= 0:
+            return False
+        if tx['token'] is None or tx['token'] != self.name :
+            return False
+
+        return True
+
+    def is_deposit(self, name, tx, addresses):
         if tx['to'] in addresses:
             return True
         return False
