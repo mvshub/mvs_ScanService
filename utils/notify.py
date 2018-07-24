@@ -10,11 +10,10 @@ def notify_swap(swap, best_block_height, feedback):
         'swap_id':swap.iden,
         'coin':swap.coin,
         'to_address':swap.to_address,
-        'txid':swap.tx_hash,
+        'tx_hash':swap.tx_hash,
         'height':swap.block_height,
         'token':swap.token,
-        'amount':swap.amount,
-        'chain_height':best_block_height
+        'amount':swap.amount
     }
     logging.info('notify swap, %s' % data)
 

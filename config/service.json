@@ -54,7 +54,7 @@
                 "rpc":1,
                 "minconf":12,
                 "coin":"ETP",
-                "feedback":"http://127.0.0.1:8005/swap",
+                "feedback":"http://127.0.0.1:8081/swap",
                 "retry_interval":300,
                 "enable":false,
                 "account":"test1",

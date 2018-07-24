@@ -53,7 +53,7 @@ class Etp(Base):
         res = self.make_request('getblock', [block_hash, 'true'])
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
-        logging.info(" > get block {}, {} txs".format(height, len(transactions)))
+        # logging.info(" > get block {}, {} txs".format(height, len(transactions)))
 
         txs = []
         for i, trans in enumerate(transactions):
@@ -81,15 +81,30 @@ class Etp(Base):
                     tx['value'] = int(output['attachment']['quantity'])
 
                 elif output['attachment']['type'] == 'message':
-                    tx['swap_address'] = output['attachment']['content']
+                    address = output['attachment']['content'].lower()
+                    if not address.startswith('0x'):
+                        address = "0x{}".format(address)
+                    tx['swap_address'] = address
 
             if tx.get('token') is not None and tx.get('swap_address') is not None:
+                address = tx.get('swap_address')
+                if len(address) < 42 or not self.is_hex(address[2:]):
+                    logging.error("transfer {} - {}, height: {}, hash: {}, invalid swap_address: {}".format(
+                        tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
+                    continue
+
                 txs.append(tx)
-                logging.info("transfer {} - {}, height: {}, swap_address: {}".format(
-                    tx['token'], tx['value'], tx['blockNumber'], tx['swap_address']))
+                logging.info("transfer {} - {}, height: {}, hash: {}, swap_address: {}".format(
+                    tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
 
         res['txs'] = txs
         return res
+
+    def is_hex(self, s):
+        if s is None or s == '':
+            return False
+        import re
+        return re.fullmatch(r"^[0-9a-f]+", s) is not None
 
     def is_swap(self, tx, addresses):
         if tx['type'] != self.name:

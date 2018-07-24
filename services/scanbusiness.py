@@ -28,14 +28,16 @@ class ScanBusiness(IBusiness):
     @timeit
     def load_to_notify_swap(self):
         ids = db.session.query(Swap.tx_hash, Swap.tx_index, Swap.output_index).group_by(
-            Swap.tx_hash, Swap.tx_index, Swap.output_index).having(db.func.count(Swap.status) == 1).all()
+            Swap.tx_hash, Swap.tx_index, Swap.output_index).having(
+            db.func.count(Swap.status) == process.PROCESS_SWAP_NEW).all()
 
         for id_ in ids:
             swap = db.session.query(Swap).filter_by(
                 tx_hash=id_[0], tx_index=id_[1], output_index=id_[2]).filter_by(coin=self.coin).first()
-            if not swap:
+            if swap is not None:
                 continue
-            swap.status = process.PROCESS_DEPOSIT_NOTIFY
+
+            swap.status = process.PROCESS_SWAP_NOTIFY
             swap.tx_time = 0
             self.swaps[swap.iden] = Swap.copy(swap)
 
@@ -68,13 +70,23 @@ class ScanBusiness(IBusiness):
                               (self.coin, e, swap))
                 continue
 
-            swap.iden = None
-            swap.status = process.PROCESS_DEPOSIT_NOTIFY
-            db.session.add(swap)
-            db.session.commit()
+            item = db.session.query(Swap).filter_by(
+                tx_hash=swap.tx_hash, tx_index=swap.tx_index,
+                output_index=swap.output_index).filter_by(coin=self.coin).first()
+
+            if item is not None:
+                item.status = process.PROCESS_SWAP_NOTIFY
+                db.session.add(item)
+                db.session.commit()
+            else:
+                swap.iden = None
+                swap.status = process.PROCESS_SWAP_NOTIFY
+                db.session.add(swap)
+                db.session.commit()
 
             self.swaps[i] = Swap.copy(swap)
-            logging.info('%s notify swap success,%s' % (self.coin, swap))
+            logging.info('%s notify swap % success, swap_address: %s' %
+                         (self.coin, swap.token, swap.to_address))
             finished_notifies.append(i)
 
         for i in finished_notifies:
@@ -129,7 +141,7 @@ class ScanBusiness(IBusiness):
         item.tx_index = swap['index']
         item.output_index = swap.get('output_index')
         item.create_time = swap['time']
-        item.status = process.PROCESS_DEPOSIT_NEW
+        item.status = process.PROCESS_SWAP_NEW
 
         db.session.add(item)
         db.session.flush()
