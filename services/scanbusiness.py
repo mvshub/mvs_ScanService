@@ -142,7 +142,7 @@ class ScanBusiness(IBusiness):
         item.tx_hash = swap['hash']
         item.tx_index = swap['index']
         item.output_index = swap.get('output_index')
-        item.create_time = swap['time']
+        item.create_time = int(time.time() * 1000)
         item.status = process.PROCESS_SWAP_NEW
 
         db.session.add(item)
@@ -170,7 +170,7 @@ class ScanBusiness(IBusiness):
         binder.to = binder_['to']
         binder.block_height = binder_['height']
         binder.tx_hash = binder_['hash']
-        binder.create_time = binder_['time']
+        binder.tx_time = binder_['time']
 
         db.session.add(binder)
         db.session.flush()

@@ -10,7 +10,7 @@ class Binder(db.Model):
     to = db.Column(db.String(128), nullable=False)
     tx_hash = db.Column(db.String(256))
     block_height = db.Column(db.Integer)
-    create_time = db.Column(db.Numeric(32), nullable=False)
+    tx_time = db.Column(db.Numeric(32), nullable=False)
 
     @classmethod
     def copy(cls, binder_):
@@ -20,5 +20,5 @@ class Binder(db.Model):
         binder.to = binder_.to
         binder.tx_hash = binder_.tx_hash
         binder.block_height = binder_.block_height
-        binder.create_time = binder_.create_time
+        binder.tx_time = binder_.tx_time
         return etp
