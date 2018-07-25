@@ -27,7 +27,7 @@
             "id": 2,
             "name": "ETH",
             "contract_mapaddress":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
-            "decimal": 8,
+            "decimal": 18,
             "type": "rpcs.eth.Eth",
             "host":"10.10.10.175",
             "port":8545
@@ -60,10 +60,9 @@
                 "coin":"ETP",
                 "feedback":"http://127.0.0.1:8081/swap",
                 "retry_interval":300,
-                "enable":false,
                 "account":"test1",
-                "passphrase":"test123456",
-                "did":"crosschain"
+                "passphrase":"test1",
+                "enable":true
             },
             {
                 "rpc":2,
@@ -81,7 +80,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
-                "enable":true
+                "enable":false
             }
         ]
     }

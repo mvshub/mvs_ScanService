@@ -6,6 +6,7 @@ from modles import db
 from modles.swap import Swap
 from modles.address import Address
 from modles.binder import Binder
+from modles.coin import Coin
 from utils import response
 from utils import notify
 from utils.timeit import timeit
@@ -222,9 +223,21 @@ class ScanBusiness(IBusiness):
             if not s:
                 s = Status()
                 s.coin = self.coin
-            s.height = self.status
+            s.height = self.status          
+
             db.session.add(s)
+
+            coins = rpc.get_coins()
+            for c in coins:
+                s = db.session.query(Coin).filter_by(name=c.name,token=c.token).first()
+                if s is None:
+                    s = c
+                s.block_height = self.status
+                s.total_supply = c.total_supply
+                db.session.add(s)
+
             db.session.commit()
+            
 
         self.status += 1
         return True

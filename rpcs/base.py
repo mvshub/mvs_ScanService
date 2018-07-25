@@ -14,6 +14,9 @@ class Base:
     def get_transaction(self, txid):
         pass
 
+    def total_supply(self, token_name=None):
+        pass
+
     def best_block_number(self):
         pass
 
@@ -22,7 +25,10 @@ class Base:
 
     def transfer(self, name, from_, to_, amount):
         pass
-
+    
+    def get_coins(self):
+        pass
+        
     def start(self):
         pass
 

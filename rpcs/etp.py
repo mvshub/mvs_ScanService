@@ -4,7 +4,7 @@ from utils.exception import RpcException, CriticalException
 import json
 import decimal
 import logging
-
+from modles.coin import Coin
 
 class Etp(Base):
     rpc_version = "2.0"
@@ -47,15 +47,28 @@ class Etp(Base):
         res = self.make_request('getaddressetp', [address])
         return res['result']['unspent']
 
-    def total_supply(self, token_name):
+
+    def get_coins(self):
+        coins=[]
+        for x in self.tokens:
+            supply = self.total_supply(x['name'])
+            if supply != 0:
+                coin = Coin()
+                coin.name = self.name
+                coin.token = x['name']
+                coin.total_supply = supply
+                coin.decimal = self.decimals(coin.token)
+                coins.append(coin)
+        return coins
+
+    def total_supply(self, token_name=None):
         res = self.make_request('getasset', [token_name])
         assets = res['result']
         if len(assets) > 0:
             supply = int(assets[0]['maximum_supply'])
-            config = [x for x in settings['tokens'] if x['name'] == token_name]
-            if config is not None and len(config) > 0:
-                supply = self.from_wei(supply, config[0]['decimal'])
-            return supply
+            if token_name in self.token_names:
+                supply = self.from_wei(supply, self.decimals(token_name))
+                return supply
         return 0
 
     def secondary_issue(self, account, passphase, to_did, symbol, volume):
@@ -158,9 +171,14 @@ class Etp(Base):
         res = self.make_request('getheight')
         return res['result']
 
-    def to_wei(self, etp, decimal):
-        return int(decimal.Decimal(etp) * decimal.Decimal(10.0**decimal))
-        # return long(ether * 10.0**18)
+    def decimals(self, name):
+        for i in self.tokens:
+            if i['name'] == name:
+                return i.decimal
+        return 0
 
-    def from_wei(self, wei, decimal):
-        return wei / decimal.Decimal(10.0**decimal)
+    def to_wei(self, token, decimal ):
+        return long(token * decimal.Decimal(10.0**decimal))
+
+    def from_wei(self,  wei, decimal):
+        return decimal.Decimal(wei) / decimal.Decimal(10.0**decimal)

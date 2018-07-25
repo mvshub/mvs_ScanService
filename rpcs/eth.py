@@ -5,6 +5,7 @@ import json
 import decimal
 import logging
 import binascii
+from modles.coin import Coin
 
 class Eth(Base):
     def __init__(self, settings):
@@ -12,6 +13,9 @@ class Eth(Base):
         self.name = 'ETH' if settings.get('name') is None else settings['name']
         if 'contract_mapaddress' in settings:
             self.contract_mapaddress = settings['contract_mapaddress']
+
+        if 'decimal' in settings:
+            self.decimal = settings['decimal']
 
     def start(self):
         self.best_block_number()
@@ -39,7 +43,34 @@ class Eth(Base):
         res = self.make_request('eth_getBalance', [address])
         return int(res, 16)
 
+    def get_coins(self):
+        coins=[]
+        supply = self.total_supply()
+        if supply != 0:
+            coin = Coin()
+            coin.name = self.name
+            coin.token = self.name
+            coin.total_supply = supply
+            coin.decimal = 18
+            coins.append(coin)
+        return coins
+
+
+    def total_supply(self, token_name=None):
+        res = requests.get('https://www.etherchain.org/api/supply', timeout=5)
+        if res.status_code != 200:
+            raise RpcException('bad request code,%s' % res.status_code)
+        try:
+            js = json.loads(res.text)
+        except Exception as e:
+            logging.error('bad response content, failed to parse,%s' % res.text)
+            return 0
+
+        supply =  self.from_wei(js['value']) 
+        return supply
+
     def get_block_by_height(self, height, addresses):
+        
         logging.info(">>>>>>>>>> ETH : get_block_by_height")
         block = self.make_request('eth_getBlockByNumber', [hex(int(height)), True])
         block['txs'] = []

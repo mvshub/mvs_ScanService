@@ -3,7 +3,7 @@ import decimal
 import logging
 from utils.exception import TransactionNotfoundException
 import binascii
-
+from modles.coin import Coin
 
 class EthToken(Eth):
 
@@ -17,6 +17,7 @@ class EthToken(Eth):
         self.contract_mapaddresses=[]
 
         for x in self.tokens:
+            if 
             self.token_names.append(x['name']) 
             self.contract_addresses.append(x['contract_address']) 
             self.contract_mapaddresses.append(x['contract_mapaddress']) 
@@ -48,26 +49,29 @@ class EthToken(Eth):
             'eth_call', [{'to': contract, 'data': data}, 'latest'])
         return int(balance, 16)
 
-    def decimals(self, name):
-        contract = self.get_contractaddress(name)
-        if contract is None:
-            return 0
-        data = '0x784c4fb1'
-        balance = self.make_request(
-            'eth_call', [{'to': contract, 'data': data}, 'latest'])
-        return int(balance, 16)
+    def get_coins(self):
+        coins=[]
+        for x in self.tokens:
+            supply = self.total_supply(x['name'])
+            if supply != 0:
+                coin = Coin()
+                coin.name = self.name
+                coin.token = x['name']
+                coin.total_supply = supply
+                coin.decimal = self.decimals(coin.token)
+                coins.append(coin)
+        return coins
 
-    def total_supply(self, name):
+    def total_supply(self, name=None):
         contract = self.get_contractaddress(name)
         if contract is None:
             return 0
         data = '0x18160ddd'
         balance = self.make_request(
             'eth_call', [{'to': contract, 'data': data}, 'latest'])
-        return int(balance['result'], 16)
+        return int(balance, 16)
 
-    def symbol(self, name=None, contract=None):
-        
+    def symbol(self, name=None, contract=None):   
         if contract is None:
             contract =  self.get_contractaddress(name)
         
@@ -97,11 +101,17 @@ class EthToken(Eth):
                                 {'from': from_address, 'to': contract, 'data': data}])
         return res, 0
 
-    def to_wei(self, token):
-        return long(token * decimal.Decimal(10.0**self.settings['decimal']))
+    def decimals(self, name):
+        for i in self.tokens:
+            if i['name'] == name:
+                return int(i['decimal'])
+        return 0
 
-    def from_wei(self, wei):
-        return decimal.Decimal(wei) / decimal.Decimal(10.0**self.settings['decimal'])
+    def to_wei(self, token, decimal):
+        return long(token * decimal.Decimal(10.0**decimal))
+
+    def from_wei(self, wei, decimal):
+        return decimal.Decimal(wei) / decimal.Decimal(10.0**decimal)
 
     def get_transaction(self, txid):
         res = self.make_request('eth_getTransactionByHash', [txid])
