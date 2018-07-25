@@ -67,7 +67,7 @@ class Etp(Base):
         if len(assets) > 0:
             supply = int(assets[0]['maximum_supply'])
             if token_name in self.token_names:
-                supply = self.from_wei(supply, self.decimals(token_name))
+                supply = self.from_wei(token_name, supply)
                 return supply
         return 0
 
@@ -171,14 +171,8 @@ class Etp(Base):
         res = self.make_request('getheight')
         return res['result']
 
-    def decimals(self, name):
+    def decimals(self, token):
         for i in self.tokens:
-            if i['name'] == name:
+            if i['name'] == token:
                 return i['decimal']
         return 0
-
-    def to_wei(self, token, dec):
-        return long(token * decimal.Decimal(10.0**dec))
-
-    def from_wei(self,  wei, dec):
-        return decimal.Decimal(wei) / decimal.Decimal(10.0**dec)

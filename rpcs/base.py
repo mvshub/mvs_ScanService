@@ -1,4 +1,4 @@
-
+import decimal
 
 class Base:
     def __init__(self, settings):
@@ -25,12 +25,27 @@ class Base:
 
     def transfer(self, name, from_, to_, amount):
         pass
-    
+
     def get_coins(self):
         pass
-        
+
     def start(self):
         pass
 
     def stop(self):
         pass
+
+    def decimals(self, token):
+        return 0
+
+    def to_wei(self, token, amount):
+        dec = self.decimals(token)
+        if dec:
+            return long(amount * decimal.Decimal(10.0**dec))
+        return amount
+
+    def from_wei(self, token, wei):
+        dec = self.decimals(token)
+        if dec:
+            return decimal.Decimal(wei) / decimal.Decimal(10.0**dec)
+        return wei

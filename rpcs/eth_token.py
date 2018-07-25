@@ -10,17 +10,17 @@ class EthToken(Eth):
     def __init__(self, settings):
         Eth.__init__(self, settings)
         self.name = settings['name']
-         
+
         self.tokens = settings['tokens']
         self.token_names=[]
         self.contract_addresses=[]
         self.contract_mapaddresses=[]
 
         for x in self.tokens:
-            if 
-            self.token_names.append(x['name']) 
-            self.contract_addresses.append(x['contract_address']) 
-            self.contract_mapaddresses.append(x['contract_mapaddress']) 
+            if
+            self.token_names.append(x['name'])
+            self.contract_addresses.append(x['contract_address'])
+            self.contract_mapaddresses.append(x['contract_mapaddress'])
 
         logging.info("EthToken: contract_address: {}, contract_mapaddress".format(
             self.contract_addresses, self.contract_mapaddresses))
@@ -71,10 +71,10 @@ class EthToken(Eth):
             'eth_call', [{'to': contract, 'data': data}, 'latest'])
         return int(balance, 16)
 
-    def symbol(self, name=None, contract=None):   
+    def symbol(self, name=None, contract=None):
         if contract is None:
             contract =  self.get_contractaddress(name)
-        
+
         if contract is None:
             return ""
 
@@ -85,7 +85,7 @@ class EthToken(Eth):
         if symbol is None or len(symbol) != 194:
             return ""
 
-        strLen = int('0x' + symbol[126:130], 16)    
+        strLen = int('0x' + symbol[126:130], 16)
         return str(binascii.unhexlify(symbol[130:194])[:strLen], "utf-8")
 
     def transfer(self, name, passphrase, from_address, to_address, amount):  # maybe failed
@@ -106,12 +106,6 @@ class EthToken(Eth):
             if i['name'] == name:
                 return int(i['decimal'])
         return 0
-
-    def to_wei(self, token, decimal):
-        return long(token * decimal.Decimal(10.0**decimal))
-
-    def from_wei(self, wei, decimal):
-        return decimal.Decimal(wei) / decimal.Decimal(10.0**decimal)
 
     def get_transaction(self, txid):
         res = self.make_request('eth_getTransactionByHash', [txid])
