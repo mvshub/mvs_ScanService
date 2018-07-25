@@ -47,6 +47,13 @@ class Etp(Base):
         res = self.make_request('getaddressetp', [address])
         return res['result']['unspent']
 
+    def total_supply(self, token_name):
+        res = self.make_request('getasset', [token_name])
+        assets = res['result']
+        if len(assets) > 0:
+            return assets[0]['maximum_supply']
+        return 0
+
     def get_block_by_height(self, height, addresses):
         res = self.make_request('getblockheader', ['-t', int(height)])
         block_hash = res['result']['hash']

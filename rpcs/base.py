@@ -8,7 +8,7 @@ class Base:
     def get_balance(self, name,address):
         pass
 
-    def is_deposit(self, name, tx, addresses):
+    def is_swap(self, name, tx, addresses):
         pass
 
     def get_transaction(self, txid):
