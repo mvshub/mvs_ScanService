@@ -174,11 +174,11 @@ class Etp(Base):
     def decimals(self, name):
         for i in self.tokens:
             if i['name'] == name:
-                return i.decimal
+                return i['decimal']
         return 0
 
-    def to_wei(self, token, decimal ):
-        return long(token * decimal.Decimal(10.0**decimal))
+    def to_wei(self, token, dec):
+        return long(token * decimal.Decimal(10.0**dec))
 
-    def from_wei(self,  wei, decimal):
-        return decimal.Decimal(wei) / decimal.Decimal(10.0**decimal)
+    def from_wei(self,  wei, dec):
+        return decimal.Decimal(wei) / decimal.Decimal(10.0**dec)

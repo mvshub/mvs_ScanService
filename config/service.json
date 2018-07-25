@@ -17,7 +17,7 @@
             "uri": "http://127.0.0.1:8820/rpc/v3",
             "tokens": [
                 {
-                    "name":"ETH.ABC",
+                    "name":"ERC.ABC",
                     "enable":true,
                     "decimal": 5
                 }
@@ -61,8 +61,8 @@
                 "feedback":"http://127.0.0.1:8081/swap",
                 "retry_interval":300,
                 "account":"test1",
-                "passphrase":"test1",
-                "enable":false
+                "passphrase":"test123456",
+                "enable":true
             },
             {
                 "rpc":2,
@@ -71,7 +71,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
-                "enable":true
+                "enable":false
             },
             {
                 "rpc":3,
