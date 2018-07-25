@@ -36,19 +36,3 @@ class Swap(db.Model):
         dep.status = dep_.status
         dep.create_time = dep_.create_time
         return dep
-
-
-def create_scan(to_address, amount, tx_hash, tx_index, output_index, block_height, tx_time, coin, token, status):
-    dep = Swap()
-    dep.create_time = int(time.time() * 1000)
-    dep.to_address = to_address
-    dep.amount = amount
-    dep.tx_hash = tx_hash
-    dep.tx_index = tx_index
-    dep.output_index = output_index
-    dep.block_height = block_height
-    dep.tx_time = tx_time
-    dep.coin = coin
-    dep.token = token
-    dep.status = status
-    return dep

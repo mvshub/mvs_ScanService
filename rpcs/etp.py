@@ -52,7 +52,7 @@ class Etp(Base):
         assets = res['result']
         if len(assets) > 0:
             supply = int(assets[0]['maximum_supply'])
-            config = [x if x['name'] == token_name for x in settings['tokens']]
+            config = [x for x in settings['tokens'] if x['name'] == token_name]
             if config is not None and len(config) > 0:
                 supply = self.from_wei(supply, config[0]['decimal'])
             return supply
