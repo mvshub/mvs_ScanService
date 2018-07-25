@@ -62,7 +62,7 @@
                 "retry_interval":300,
                 "account":"test1",
                 "passphrase":"test1",
-                "enable":true
+                "enable":false
             },
             {
                 "rpc":2,
@@ -71,7 +71,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
-                "enable":false
+                "enable":true
             },
             {
                 "rpc":3,

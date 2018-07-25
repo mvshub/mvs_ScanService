@@ -138,7 +138,7 @@ class ScanBusiness(IBusiness):
         item.token = swap['token']
         item.amount = swap['amount']
         item.block_height = swap['height']
-        item.tx_time = swap['tx_time']
+        item.tx_time = swap['time']
         item.tx_hash = swap['hash']
         item.tx_index = swap['index']
         item.output_index = swap.get('output_index')
