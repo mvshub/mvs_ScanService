@@ -51,8 +51,12 @@ class Etp(Base):
         res = self.make_request('getasset', [token_name])
         assets = res['result']
         if len(assets) > 0:
-            return assets[0]['maximum_supply']
+            return int(assets[0]['maximum_supply'])
         return 0
+
+    def secondary_issue(self, account, passphase, to_did, symbol, volume):
+        res = self.make_request('secondaryissue', [account, passphase, to_did, symbol, volume])
+        return res['hash']
 
     def get_block_by_height(self, height, addresses):
         res = self.make_request('getblockheader', ['-t', int(height)])

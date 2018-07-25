@@ -62,7 +62,8 @@
                 "retry_interval":300,
                 "enable":false,
                 "account":"test1",
-                "passphrase":"test1"
+                "passphrase":"test123456",
+                "did":"crosschain"
             },
             {
                 "rpc":2,
