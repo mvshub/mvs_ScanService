@@ -9,9 +9,9 @@ import binascii
 class Eth(Base):
     def __init__(self, settings):
         Base.__init__(self, settings)
-        print (settings)
         self.name = 'ETH' if settings.get('name') is None else settings['name']
-        self.contract_mapaddress = settings['contract_mapaddress']
+        if 'contract_mapaddress' in settings:
+            self.contract_mapaddress = settings['contract_mapaddress']
 
     def start(self):
         self.best_block_number()
@@ -54,7 +54,6 @@ class Eth(Base):
             if tx['to'] is None :
                 continue          
             elif tx['to'] == self.contract_mapaddress:
-                import pdb; pdb.set_trace()
                 input_ = tx['input']
                 if len(input_) != 202:
                     continue
@@ -64,7 +63,6 @@ class Eth(Base):
                 tx['isBinder'] = True
                 logging.info('new binder found, from:%s, to:%s' % (tx['from'], tx['to']))
             else:
-                import pdb; pdb.set_trace()
                 if  tx['to'] not in addresses:
                     continue
                 

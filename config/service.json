@@ -71,7 +71,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
-                "enable":true
+                "enable":false
             },
             {
                 "rpc":3,
@@ -80,7 +80,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
-                "enable":false
+                "enable":true
             }
         ]
     }

@@ -19,7 +19,7 @@ class EthToken(Eth):
         for x in self.tokens:
             self.token_names.append(x['name']) 
             self.contract_addresses.append(x['contract_address']) 
-            self.contract_mapaddresses.append(x['contract_address']) 
+            self.contract_mapaddresses.append(x['contract_mapaddress']) 
 
         logging.info("EthToken: contract_address: {}, contract_mapaddress".format(
             self.contract_addresses, self.contract_mapaddresses))
@@ -66,15 +66,19 @@ class EthToken(Eth):
             'eth_call', [{'to': contract, 'data': data}, 'latest'])
         return int(balance['result'], 16)
 
-    def symbol(self, name):
-        contract = self.get_contractaddress(name)
+    def symbol(self, name=None, contract=None):
+        
+        if contract is None:
+            contract =  self.get_contractaddress(name)
+        
         if contract is None:
             return ""
+
         data = '0x95d89b41'
         symbol = self.make_request(
             'eth_call', [{'to': contract, 'data': data}, 'latest'])
 
-        if len(symbol) != 194:
+        if symbol is None or len(symbol) != 194:
             return ""
 
         strLen = int('0x' + symbol[126:130], 16)    
@@ -135,8 +139,8 @@ class EthToken(Eth):
         block = self.make_request(
             'eth_getBlockByNumber', [hex(int(height)), True])
 
-        block['txs'] = block['transactions']
-        for i, tx in enumerate(block['txs']):
+        block['txs']=[]
+        for i, tx in enumerate(block['transactions']):
             if tx['to'] is None or tx['to'] not in (self.contract_addresses + self.contract_mapaddresses):
                 tx['to'] = 'create contract'
                 continue
@@ -151,17 +155,18 @@ class EthToken(Eth):
             tx['time'] = int(block['timestamp'], 16)
             tx['isBinder'] = False
             tx['type'] = self.name
-
             input_ = tx['input']
             if tx['to'] in self.contract_addresses:
                 if len(input_) != 138:
                     continue
                 value = int('0x' + input_[74:], 16)
                 to_addr = '0x' + input_[34:74]
+                if to_addr not in addresses:
+                    continue
                 tx['swap_address'] = to_addr
                 tx['value'] = value
                 tx['amount'] = value
-                tx['token'] = self.symbol(tx['to'])
+                tx['token'] = self.symbol(contract=tx['to'])
 
             else:
                 if len(input_) != 202:
@@ -171,5 +176,7 @@ class EthToken(Eth):
 
                 tx['isBinder'] = True
                 logging.info('new binder found, from:%s, to:%s' % (tx['from'], tx['to']))
+
+            block['txs'].append(tx)
 
         return block

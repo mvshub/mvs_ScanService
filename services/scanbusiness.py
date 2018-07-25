@@ -34,7 +34,7 @@ class ScanBusiness(IBusiness):
         for id_ in ids:
             swap = db.session.query(Swap).filter_by(
                 tx_hash=id_[0], tx_index=id_[1], output_index=id_[2]).filter_by(coin=self.coin).first()
-            if swap is not None:
+            if swap is None:
                 continue
 
             swap.status = process.PROCESS_SWAP_NOTIFY
