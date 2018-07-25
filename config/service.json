@@ -19,7 +19,7 @@
                 {
                     "name":"ETH.ABC",
                     "enable":true,
-                    "decimal": 8
+                    "decimal": 5
                 }
             ]
         },

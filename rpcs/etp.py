@@ -51,7 +51,11 @@ class Etp(Base):
         res = self.make_request('getasset', [token_name])
         assets = res['result']
         if len(assets) > 0:
-            return int(assets[0]['maximum_supply'])
+            supply = int(assets[0]['maximum_supply'])
+            config = [x if x['name'] == token_name for x in settings['tokens']]
+            if config is not None and len(config) > 0:
+                supply = self.from_wei(supply, config[0]['decimal'])
+            return supply
         return 0
 
     def secondary_issue(self, account, passphase, to_did, symbol, volume):
@@ -154,9 +158,9 @@ class Etp(Base):
         res = self.make_request('getheight')
         return res['result']
 
-    def to_wei(self, ether):
-        return int(decimal.Decimal(ether) * decimal.Decimal(10.0**8))
+    def to_wei(self, etp, decimal):
+        return int(decimal.Decimal(etp) * decimal.Decimal(10.0**decimal))
         # return long(ether * 10.0**18)
 
-    def from_wei(self, wei):
-        return wei / decimal.Decimal(10.0**8)
+    def from_wei(self, wei, decimal):
+        return wei / decimal.Decimal(10.0**decimal)
