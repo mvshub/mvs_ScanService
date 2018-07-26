@@ -64,8 +64,8 @@ class Eth(Base):
         except Exception as e:
             logging.error('bad response content, failed to parse,%s' % res.text)
             return 0
-            
-        return supply
+
+        return js['value']
 
     def get_block_by_height(self, height, addresses):
         
