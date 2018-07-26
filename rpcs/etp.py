@@ -81,7 +81,7 @@ class Etp(Base):
             if result:
                 tx_hash = result['hash']
         except ValueError, e:
-            logging.error("failed to get transaction: {}".format(str(e)))
+            logging.error("failed to secondary_issue: {}".format(str(e)))
             raise
         return tx_hash
 

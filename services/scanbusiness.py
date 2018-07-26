@@ -244,6 +244,6 @@ class ScanBusiness(IBusiness):
         IBusiness.start(self)
         self.post(self.load_address)
         self.post(self.load_status)
-        self.post(self.load_to_notify_swap)
+        # self.post(self.load_to_notify_swap)
         self.post(self.process_scan)
-        self.post(self.process_notify)
+        # self.post(self.process_notify)
