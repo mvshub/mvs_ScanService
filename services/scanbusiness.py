@@ -196,11 +196,11 @@ class ScanBusiness(IBusiness):
         swaps = []
         binders=[]
         for tx in block['txs']:
-            if 'isBinder' in tx and tx['isBinder'] == True:
-                binders.extend([tx])
+            if tx.get('isBinder', False) == True:
+                binders.append(tx)
                 logging.info(' binder address, from:%s, to:%s' % (tx['from'], tx['to']))
-            elif  rpc.is_swap(tx, self.addresses):
-                swaps.extend([tx])
+            elif rpc.is_swap(tx, self.addresses):
+                swaps.append(tx)
                 logging.info('new swap found: %s' % tx)
 
         for swap in swaps:
