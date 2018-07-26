@@ -157,8 +157,16 @@ class Etp(Base):
         return False
 
     def get_transaction(self, txid):
-        res = self.make_request('gettransaction', [txid])
-        return res['result']
+        result = None
+        try:
+            res = self.make_request('gettransaction', [txid])
+            result = res['result']
+            if result:
+                result['blockNumber'] = result['height']
+        except ValueError, e:
+            logging.error("failed to get transaction: {}".format(str(e)))
+            raise
+        return result
 
     def new_address(self, account, passphase):
         res = self.make_request('getnewaddress', [account, passphase])
