@@ -76,9 +76,7 @@ class Etp(Base):
         return res['hash']
 
     def get_block_by_height(self, height, addresses):
-        res = self.make_request('getblockheader', ['-t', int(height)])
-        block_hash = res['result']['hash']
-        res = self.make_request('getblock', [block_hash, 'true'])
+        res = self.make_request('getblock', [height])
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
         # logging.info(" > get block {}, {} txs".format(height, len(transactions)))
@@ -116,7 +114,7 @@ class Etp(Base):
 
             if tx.get('token') is not None and tx.get('swap_address') is not None:
                 address = tx.get('swap_address')
-                if len(address) < 42 or not self.is_hex(address[2:]):
+                if self.is_invalid_swap_address(address):
                     logging.error("transfer {} - {}, height: {}, hash: {}, invalid swap_address: {}".format(
                         tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
                     continue
@@ -127,6 +125,9 @@ class Etp(Base):
 
         res['txs'] = txs
         return res
+
+    def is_invalid_swap_address(self, address):
+        return address is None or len(address) < 42 or not self.is_hex(address[2:])
 
     def is_hex(self, s):
         if s is None or s == '':
@@ -144,6 +145,10 @@ class Etp(Base):
 
         if tx['token'] not in self.token_names:
             return False
+
+        if self.is_invalid_swap_address(tx['swap_address']):
+            return False
+
         if set(tx['input_addresses']).intersection(set(addresses)):
             return False
 
