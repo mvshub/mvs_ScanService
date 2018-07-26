@@ -11,8 +11,7 @@ class Eth(Base):
     def __init__(self, settings):
         Base.__init__(self, settings)
         self.name = 'ETH' if settings.get('name') is None else settings['name']
-        if 'contract_mapaddress' in settings:
-            self.contract_mapaddress = settings['contract_mapaddress']
+        self.contract_mapaddress = settings['contract_mapaddress']
 
         if 'decimal' in settings:
             self.decimal = settings['decimal']
@@ -50,7 +49,7 @@ class Eth(Base):
             coin = Coin()
             coin.name = self.name
             coin.token = self.name
-            coin.total_supply = supply
+            coin.total_supply = =  self.from_wei(token=None,supply) 
             coin.decimal = 18
             coins.append(coin)
         return coins
@@ -65,8 +64,7 @@ class Eth(Base):
         except Exception as e:
             logging.error('bad response content, failed to parse,%s' % res.text)
             return 0
-
-        supply =  self.from_wei(js['value']) 
+            
         return supply
 
     def get_block_by_height(self, height, addresses):
@@ -177,8 +175,5 @@ class Eth(Base):
             return False
         return True
 
-    def to_wei(self, ether):
-        return long(ether * decimal.Decimal(10.0**18))
-
-    def from_wei(self, wei):
-        return decimal.Decimal(wei) / decimal.Decimal(10.0**18)
+    def decimals(self, token):
+        return 18

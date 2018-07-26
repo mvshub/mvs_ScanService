@@ -26,7 +26,7 @@
         {
             "id": 2,
             "name": "ETH",
-            "contract_mapaddress":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
+            "contract_mapaddress":"0x7cf4d8fdec9244e774272aac648d33e051fd83f4",
             "decimal": 18,
             "type": "rpcs.eth.Eth",
             "host":"10.10.10.175",
@@ -36,15 +36,21 @@
             "id":3,
             "name":"ETHToken",
             "type":"rpcs.eth_token.EthToken",
+            "contract_mapaddress":"0x7cf4d8fdec9244e774272aac648d33e051fd83f4",
             "host":"10.10.10.175",
             "port":8545,
             "tokens": [
                 {
                     "name":"ABC",
-                    "contract_address":"0x852160a3dee511bbae2df47f0a322845e96017af",
-                    "contract_mapaddress":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
+                    "contract_address":"0x0506e5ef752ea1129a7e6ed41df5e93131beE8a7",
                     "enable":true,
                     "decimal": 5
+                },
+                {
+                    "name":"SMT",
+                    "contract_address":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
+                    "enable":true,
+                    "decimal": 4
                 }
             ]
         }
@@ -62,7 +68,7 @@
                 "retry_interval":300,
                 "account":"test1",
                 "passphrase":"test123456",
-                "enable":true
+                "enable":false
             },
             {
                 "rpc":2,
@@ -80,7 +86,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
-                "enable":false
+                "enable":true
             }
         ]
     }

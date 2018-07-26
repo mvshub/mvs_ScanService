@@ -40,12 +40,8 @@ class Base:
 
     def to_wei(self, token, amount):
         dec = self.decimals(token)
-        if dec:
-            return long(amount * decimal.Decimal(10.0**dec))
-        return amount
+        return long(amount * decimal.Decimal(10.0**dec))
 
     def from_wei(self, token, wei):
         dec = self.decimals(token)
-        if dec:
-            return decimal.Decimal(wei) / decimal.Decimal(10.0**dec)
-        return wei
+        return decimal.Decimal(wei) / decimal.Decimal(10.0**dec)

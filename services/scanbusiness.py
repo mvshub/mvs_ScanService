@@ -125,9 +125,7 @@ class ScanBusiness(IBusiness):
     @timeit
     def commit_swap(self, swap):
         r = db.session.query(Swap).filter_by(
-            coin=self.coin, tx_hash=swap['hash'],
-            tx_index=swap['index'],
-            output_index=swap.get('output_index')).first()
+            coin=self.coin, tx_hash=swap['hash']).first()
         if r:
             logging.info('swap already existed')
             return

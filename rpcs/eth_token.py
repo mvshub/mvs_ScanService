@@ -14,16 +14,15 @@ class EthToken(Eth):
         self.tokens = settings['tokens']
         self.token_names=[]
         self.contract_addresses=[]
-        self.contract_mapaddresses=[]
+       
+        self.contract_mapaddress = settings['contract_mapaddress']
 
         for x in self.tokens:
-            if
             self.token_names.append(x['name'])
             self.contract_addresses.append(x['contract_address'])
-            self.contract_mapaddresses.append(x['contract_mapaddress'])
 
         logging.info("EthToken: contract_address: {}, contract_mapaddress".format(
-            self.contract_addresses, self.contract_mapaddresses))
+            self.contract_addresses, self.contract_mapaddress))
 
     def start(self):
         Eth.start(self)
@@ -57,7 +56,7 @@ class EthToken(Eth):
                 coin = Coin()
                 coin.name = self.name
                 coin.token = x['name']
-                coin.total_supply = supply
+                coin.total_supply = self.from_wei(x['name'],supply)
                 coin.decimal = self.decimals(coin.token)
                 coins.append(coin)
         return coins
@@ -145,7 +144,7 @@ class EthToken(Eth):
 
         block['txs']=[]
         for i, tx in enumerate(block['transactions']):
-            if tx['to'] is None or tx['to'] not in (self.contract_addresses + self.contract_mapaddresses):
+            if tx['to'] is None or tx['to'] not in (self.contract_addresses,self.contract_mapaddress):
                 tx['to'] = 'create contract'
                 continue
 
