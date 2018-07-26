@@ -150,7 +150,6 @@ class ScanBusiness(IBusiness):
 
         self.swaps[item.iden] = Swap.copy(item)
 
-
     @timeit
     def commit_swaps(self, swaps):
         for swap in swaps:
@@ -160,7 +159,8 @@ class ScanBusiness(IBusiness):
     def commit_binder(self, binder_):
         r = db.session.query(Binder).filter_by(tx_hash=binder_['hash']).all()
         if r:
-            logging.info('binder already existed,from: %s, to: %s , tx_hash: %s' % (binder_['from'],binder_['to'],binder_['hash']))
+            logging.info('binder already existed,from: %s, to: %s , tx_hash: %s' % (
+                binder_['from'], binder_['to'], binder_['hash']))
             return
 
         binder = Binder()
@@ -173,7 +173,6 @@ class ScanBusiness(IBusiness):
         db.session.add(binder)
         db.session.flush()
         db.session.commit()
-
 
     @timeit
     def commit_binders(self, binders):
@@ -194,11 +193,12 @@ class ScanBusiness(IBusiness):
 
         block = rpc.get_block_by_height(self.status, self.addresses)
         swaps = []
-        binders=[]
+        binders = []
         for tx in block['txs']:
             if tx.get('isBinder', False) == True:
                 binders.append(tx)
-                logging.info(' binder address, from:%s, to:%s' % (tx['from'], tx['to']))
+                logging.info(' binder address, from:%s, to:%s' %
+                             (tx['from'], tx['to']))
             elif rpc.is_swap(tx, self.addresses):
                 swaps.append(tx)
                 logging.info('new swap found: %s' % tx)
@@ -213,8 +213,7 @@ class ScanBusiness(IBusiness):
         self.commit_binders(binders)
 
         logging.info("> scan block {} : {} txs, {} swaps, {} binders".format(
-            self.status, len(block['txs']), len(swaps),len(binders)))
-
+            self.status, len(block['txs']), len(swaps), len(binders)))
 
         if swaps or self.status % 50 == 0:
             s = db.session.query(Status).filter_by(coin=self.coin).first()
@@ -227,7 +226,8 @@ class ScanBusiness(IBusiness):
 
             coins = rpc.get_coins()
             for c in coins:
-                s = db.session.query(Coin).filter_by(name=c.name,token=c.token).first()
+                s = db.session.query(Coin).filter_by(
+                    name=c.name, token=c.token).first()
                 if s is None:
                     s = c
                 s.block_height = self.status
@@ -235,7 +235,6 @@ class ScanBusiness(IBusiness):
                 db.session.add(s)
 
             db.session.commit()
-
 
         self.status += 1
         return True
