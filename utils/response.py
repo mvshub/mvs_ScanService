@@ -21,6 +21,4 @@ errors = {
 def make_response(code=ERR_SUCCESS, result=None):
     if result is None and code != ERR_SUCCESS:
         result = errors[code]
-    from utils.crypto import encrypt
-    import os
     return json.dumps({'code': code, 'result': result}, cls=DecimalEncoder)
