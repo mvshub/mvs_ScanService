@@ -59,6 +59,7 @@ class Etp(Base):
                 coin.token = x['name']
                 coin.total_supply = supply
                 coin.decimal = self.decimals(coin.token)
+                coin.status = 0
                 coins.append(coin)
         return coins
 

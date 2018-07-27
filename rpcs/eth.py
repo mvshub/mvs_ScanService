@@ -54,6 +54,8 @@ class Eth(Base):
             coin.token = self.name
             coin.total_supply = self.from_wei(token=None, wei=supply)
             coin.decimal = 18
+            coin.status = 0
+
             coins.append(coin)
         return coins
 

@@ -58,6 +58,7 @@ class EthToken(Eth):
                 coin.token = x['name']
                 coin.total_supply = self.from_wei(x['name'],supply)
                 coin.decimal = self.decimals(coin.token)
+                coin.status = 0
                 coins.append(coin)
         return coins
 
