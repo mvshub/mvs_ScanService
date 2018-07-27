@@ -7,6 +7,7 @@ import logging
 from models.coin import Coin
 from models.constants import Status
 
+
 class Etp(Base):
     rpc_version = "2.0"
     rpc_id = 0
@@ -133,7 +134,7 @@ class Etp(Base):
 
                 txs.append(tx)
                 logging.info("transfer {} - {}, height: {}, hash: {}, to: {}".format(
-                    tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
+                    tx['token'], tx['value'], tx['blockNumber'], tx['hash'], address))
 
         res['txs'] = txs
         return res
@@ -164,7 +165,7 @@ class Etp(Base):
         if set(tx['input_addresses']).intersection(set(addresses)):
             return False
 
-        if tx['script'].find('numequalverify') < 0 and tx['to'] in addresses:
+        if tx['script'].find('numequalverify') < 0 and tx['swap_address'] in addresses:
             return True
         return False
 
