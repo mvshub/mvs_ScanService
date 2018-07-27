@@ -5,7 +5,7 @@ import json
 import decimal
 import logging
 from models.coin import Coin
-
+from models.constants import Status
 
 class Etp(Base):
     rpc_version = "2.0"
@@ -59,7 +59,7 @@ class Etp(Base):
                 coin.token = x['name']
                 coin.total_supply = supply
                 coin.decimal = self.decimals(coin.token)
-                coin.status = 0
+                coin.status = int(Status.Token_Normal)
                 coins.append(coin)
         return coins
 

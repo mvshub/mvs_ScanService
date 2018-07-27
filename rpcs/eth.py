@@ -6,6 +6,7 @@ import decimal
 import logging
 import binascii
 from models.coin import Coin
+from models.constants import Status
 
 
 class Eth(Base):
@@ -54,7 +55,8 @@ class Eth(Base):
             coin.token = self.name
             coin.total_supply = self.from_wei(token=None, wei=supply)
             coin.decimal = 18
-            coin.status = 0
+            coin.status = int(Status.Token_Normal)
+
 
             coins.append(coin)
         return coins

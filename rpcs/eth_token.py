@@ -4,6 +4,7 @@ import logging
 from utils.exception import TransactionNotfoundException
 import binascii
 from models.coin import Coin
+from models.constants import Status
 
 class EthToken(Eth):
 
@@ -58,7 +59,7 @@ class EthToken(Eth):
                 coin.token = x['name']
                 coin.total_supply = self.from_wei(x['name'],supply)
                 coin.decimal = self.decimals(coin.token)
-                coin.status = 0
+                coin.status = int(Status.Token_Normal)
                 coins.append(coin)
         return coins
 
