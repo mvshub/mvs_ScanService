@@ -6,7 +6,6 @@ class Swap(db.Model):
     __tablename__ = 'swap'
 
     iden = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # deposit_id = db.Column(db.Integer, primary_key=True)
     to_address = db.Column(db.String(128), nullable=False)
     amount = db.Column(db.Numeric(64, 18), nullable=False)
     tx_hash = db.Column(db.String(256))
@@ -16,7 +15,7 @@ class Swap(db.Model):
     tx_time = db.Column(db.Numeric(32))
     token = db.Column(db.String(64))
     coin = db.Column(db.String(64))
-    
+
     # new confirmed transferred committed
     status = db.Column(db.Integer, nullable=False)
     create_time = db.Column(db.Numeric(32), nullable=False)

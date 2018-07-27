@@ -80,7 +80,7 @@ class Etp(Base):
             result = res['result']
             if result:
                 tx_hash = result['hash']
-        except ValueError, e:
+        except RpcException as e:
             logging.error("failed to secondary_issue: {}".format(str(e)))
             raise
         return tx_hash
@@ -174,7 +174,7 @@ class Etp(Base):
             result = res['result']
             if result:
                 result['blockNumber'] = result['height']
-        except ValueError, e:
+        except RpcException as e:
             logging.error("failed to get transaction: {}".format(str(e)))
             raise
         return result
