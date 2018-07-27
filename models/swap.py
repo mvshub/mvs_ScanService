@@ -6,9 +6,9 @@ class Swap(db.Model):
     __tablename__ = 'swap'
 
     iden = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    swap_address = db.Column(db.String(128), nullable=False)
-    from_address = db.Column(db.String(128), nullable=False)
-    to_address = db.Column(db.String(128), nullable=False)
+    swap_address = db.Column(db.String(128))
+    from_address = db.Column(db.String(128))
+    to_address = db.Column(db.String(128))
     amount = db.Column(db.Numeric(64, 18), nullable=False)
     tx_hash = db.Column(db.String(256))
     tx_index = db.Column(db.Integer)
