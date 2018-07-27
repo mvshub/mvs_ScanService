@@ -1,7 +1,7 @@
 from services.abstract import AbstractService
 from utils import response
-from modles import process, db
-from modles.address import Address
+from models import process, db
+from models.address import Address
 import logging
 from utils.timeit import timeit
 

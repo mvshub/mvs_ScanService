@@ -4,7 +4,7 @@ from utils.exception import RpcException, CriticalException
 import json
 import decimal
 import logging
-from modles.coin import Coin
+from models.coin import Coin
 
 
 class Etp(Base):
