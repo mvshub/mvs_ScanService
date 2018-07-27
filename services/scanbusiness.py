@@ -47,6 +47,7 @@ class ScanBusiness(IBusiness):
         item = Swap()
         item.coin = self.coin
         item.swap_address = swap['swap_address']
+        item.to_address = swap['to']
         item.from_address = swap['from']
         item.token = swap['token']
         item.amount = swap['amount']

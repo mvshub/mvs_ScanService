@@ -109,7 +109,7 @@ class Etp(Base):
                     tx['blockNumber'] = height
                     tx['index'] = i
                     tx['hash'] = trans['hash']
-                    tx['to'] = to_addr
+                    tx['swap_address'] = to_addr
                     tx['output_index'] = j
                     tx['time'] = int(timestamp)
                     tx['input_addresses'] = input_addresses
@@ -122,23 +122,23 @@ class Etp(Base):
                     address = output['attachment']['content'].lower()
                     if not address.startswith('0x'):
                         address = "0x{}".format(address)
-                    tx['swap_address'] = address
+                    tx['to'] = address
 
-            if tx.get('token') is not None and tx.get('swap_address') is not None:
-                address = tx.get('swap_address')
-                if self.is_invalid_swap_address(address):
-                    logging.error("transfer {} - {}, height: {}, hash: {}, invalid swap_address: {}".format(
+            if tx.get('token') is not None and tx.get('to') is not None:
+                address = tx.get('to')
+                if self.is_invalid_to_address(address):
+                    logging.error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
                     continue
 
                 txs.append(tx)
-                logging.info("transfer {} - {}, height: {}, hash: {}, swap_address: {}".format(
+                logging.info("transfer {} - {}, height: {}, hash: {}, to: {}".format(
                     tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
 
         res['txs'] = txs
         return res
 
-    def is_invalid_swap_address(self, address):
+    def is_invalid_to_address(self, address):
         return address is None or len(address) < 42 or not self.is_hex(address[2:])
 
     def is_hex(self, s):
@@ -158,7 +158,7 @@ class Etp(Base):
         if tx['token'] not in self.token_names:
             return False
 
-        if self.is_invalid_swap_address(tx['swap_address']):
+        if self.is_invalid_to_address(tx['to']):
             return False
 
         if set(tx['input_addresses']).intersection(set(addresses)):

@@ -171,6 +171,7 @@ class EthToken(Eth):
                 if to_addr not in addresses:
                     continue
                 tx['swap_address'] = to_addr
+                tx['to'] = None
                 tx['value'] = value
                 tx['amount'] = value
                 tx['token'] = self.symbol(contract=tx['to'])

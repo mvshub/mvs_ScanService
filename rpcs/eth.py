@@ -106,6 +106,7 @@ class Eth(Base):
                     continue
 
                 tx['swap_address'] = tx['to']
+                tx['to'] = None
                 tx['token'] = 'ETH'
 
             block['txs'].append(tx)
