@@ -4,9 +4,7 @@ from functools import partial
 from flask import request
 import json
 from utils.parameter import parameter_check
-# from models import process, db
 import time
-from models.address import Address
 import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -52,13 +50,8 @@ class AbstractService(IService):
                     s['f'], self.rpcmanager.get_available_feed(d['rpc']))
                 app.add_url_rule(rule=url, endpoint=endpoint,
                                  view_func=partial(f, d), methods=s['methods'])
-            # app.add_url_rule('/wallet/address/%s' % d['coin'], 'address_%s' % i, partial(self.process_get_address, self.rpcmanager.get_available_feed(d['rpc'])) )
-            # app.add_url_rule('/wallet/withdraw/%s' % d['coin'], 'withdraw_%s' % i, partial(self.process_post_withdraw, self.rpcmanager.get_available_feed(d['rpc'])), methods=['POST'])
 
     def work(self):
-        # db.session = self.DBSession()
-        # self.app.app_context().push()
-
         while not self.stopped:
             try:
                 old_tasks = self.__tasks
@@ -111,8 +104,6 @@ class AbstractService(IService):
 
         self.start_service()
         self.__init_app(self.app)
-        # self.registe_service('/wallet/address/%s', partial(self.process_get_address, self.rpcmanager.get_available_feed(d['rpc'])), 'address')
-        # self.registe_service('/wallet/withdraw/%s', partial(self.process_get_address, self.rpcmanager.get_available_feed(d['rpc'])), 'withdraw')
 
     def stop(self):
         self.stopped = True

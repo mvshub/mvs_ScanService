@@ -3,7 +3,6 @@ from services.scan import ScanService
 from rpcs.rpcmanager import RpcManager
 from utils import response
 from flask import Flask, jsonify
-from flask_migrate import Migrate, MigrateCommand
 import sqlalchemy_utils
 from models import db
 from gevent.pywsgi import WSGIServer
@@ -33,26 +32,11 @@ class WalletService(IService):
         self.app.config['extend_existing'] = True
 
         db.init_app(self.app)
-        # migrate = Migrate(self.app, db)
         with self.app.app_context():
-            # self.app.app_context().push()
             db.create_all()
-        # manager.add_command('db', MigrateCommand)
 
     def start(self):
         self.app = Flask(__name__)
-
-        # import os
-        # if self.settings.get('privkey_path') is None \
-        #     or not os.path.exists(self.settings.get('privkey_path')) \
-        #     or self.settings.get('pubkey_path') is None \
-        #     or not os.path.exists(self.settings.get('pubkey_path')):
-        #     raise RuntimeError('failed to get public or private key path')
-
-        # self.privkey = open(self.settings.get('privkey_path')).read()
-        # self.pubkey = open(self.settings.get('pubkey_path')).read()
-        # os.environ['privkey'] = self.privkey
-        # os.environ['pubkey'] = self.pubkey
 
         @self.app.route('/')
         def root():
@@ -61,35 +45,6 @@ class WalletService(IService):
         @self.app.errorhandler(404)
         def not_found(error):
             return response.make_response(response.ERR_SERVER_ERROR, '404: TokenDroplet service page not found')
-
-        # @self.app.before_request
-        # def before_request():
-        #     from flask import request, abort
-        #     from utils.crypto import verify
-
-        #     if request.headers.get('signature') is None:
-        #         abort(400)
-        #         return
-        #     s = request.headers['signature'].encode('utf8')
-        #     if not verify(self.pubkey, request.path.encode('utf8'), s):
-        #         logging.info('invalid signature')
-        #         abort(400)
-
-        # @self.app.after_request
-        # def per_request_callbacks(response):
-        #     from flask import g, make_response
-        #     for func in getattr(g, 'call_after_request', ()):
-        #         response = func(response)
-        #     from utils.crypto import sign_data, encrypt
-
-        #     if response.status_code == 200:
-        #         data = response.data
-        #         s = sign_data(self.privkey, data)
-        #         data = encrypt(os.environ['pubkey'], data)
-        #         resp = make_response(data)
-        #         resp.headers['signature'] = s
-        #         response = resp
-        #     return response
 
         self.setup_db()
         self.rpcmanager.start()

@@ -1,10 +1,8 @@
 from services.ibusiness import IBusiness
-from services.address import AddressService
 from models import process
 from models.status import Status
 from models import db
 from models.swap import Swap
-from models.address import Address
 from models.binder import Binder
 from models.coin import Coin
 from utils import response
@@ -27,74 +25,6 @@ class ScanBusiness(IBusiness):
         self.swaps = {}
 
     @timeit
-    def load_to_notify_swap(self):
-        ids = db.session.query(Swap.tx_hash, Swap.tx_index, Swap.output_index).group_by(
-            Swap.tx_hash, Swap.tx_index, Swap.output_index).having(
-            db.func.count(Swap.status) == process.PROCESS_SWAP_NEW).all()
-
-        for id_ in ids:
-            swap = db.session.query(Swap).filter_by(
-                tx_hash=id_[0], tx_index=id_[1], output_index=id_[2]).filter_by(coin=self.coin).first()
-            if swap is None:
-                continue
-
-            swap.status = process.PROCESS_SWAP_NOTIFY
-            swap.tx_time = 0
-            self.swaps[swap.iden] = Swap.copy(swap)
-
-    @timeit
-    def process_notify(self):
-        t = int(time.time())
-        finished_notifies = []
-        try:
-            best_block_height = self.service.best_block_number
-        except Exception as e:
-            return True
-
-        for i, swap in self.swaps.items():
-            if swap.tx_time is None:
-                swap.tx_time = 0
-            if (t - swap.tx_time) < self.setting['retry_interval']:
-                continue
-            if (best_block_height - swap.block_height + 1) < self.setting['minconf']:
-                continue
-
-            swap.tx_time = t
-            try:
-                import copy
-                dup = Swap.copy(swap)
-                dup.amount = self.rpc.from_wei(dup.token, dup.amount)
-                notify.notify_swap(
-                    dup, self.service.best_block_number, self.setting['feedback'])
-            except Exception as e:
-                logging.error('%s notify swap failed,%s,%s' %
-                              (self.coin, e, swap))
-                continue
-
-            item = db.session.query(Swap).filter_by(
-                tx_hash=swap.tx_hash, tx_index=swap.tx_index,
-                output_index=swap.output_index).filter_by(coin=self.coin).first()
-
-            if item is not None:
-                item.status = process.PROCESS_SWAP_NOTIFY
-                db.session.add(item)
-                db.session.commit()
-            else:
-                swap.iden = None
-                swap.status = process.PROCESS_SWAP_NOTIFY
-                db.session.add(swap)
-                db.session.commit()
-
-            self.swaps[i] = Swap.copy(swap)
-            logging.info('%s notify swap % success, swap_address: %s' %
-                         (self.coin, swap.token, swap.to_address))
-            finished_notifies.append(i)
-
-        for i in finished_notifies:
-            self.swaps.pop(i)
-        return True
-
-    @timeit
     def load_status(self):
         s = db.session.query(Status).filter_by(coin=self.coin).first()
         if not s:
@@ -105,22 +35,6 @@ class ScanBusiness(IBusiness):
             db.session.add(s)
             db.session.commit()
         self.status = s.height
-
-    @timeit
-    def load_address(self):
-        addresses = db.session.query(Address).filter_by(
-            coin=self.coin, inuse=1).all()
-        self.addresses.update([a.address for a in addresses])
-        for a in addresses:
-            logging.info("load addresses: {}".format(a.address))
-
-    @timeit
-    def on_address_change(self):
-        self.post(self.load_address)
-
-    @timeit
-    def process_swaps(self):
-        pass
 
     @timeit
     def commit_swap(self, swap):
@@ -145,7 +59,6 @@ class ScanBusiness(IBusiness):
 
         db.session.add(item)
         db.session.flush()
-        # print(item.tx_hash)
         db.session.commit()
 
         self.swaps[item.iden] = Swap.copy(item)
@@ -241,8 +154,5 @@ class ScanBusiness(IBusiness):
 
     def start(self):
         IBusiness.start(self)
-        self.post(self.load_address)
         self.post(self.load_status)
-        # self.post(self.load_to_notify_swap)
         self.post(self.process_scan)
-        # self.post(self.process_notify)

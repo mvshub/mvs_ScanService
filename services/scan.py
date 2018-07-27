@@ -1,4 +1,4 @@
-from services.address import AddressService
+from services.abstract import AbstractService
 from services.scanbusiness import ScanBusiness
 from utils import response
 from models.swap import Swap
@@ -7,21 +7,13 @@ from models import db
 import logging
 
 
-class ScanService(AddressService):
+class ScanService(AbstractService):
 
     def __init__(self, app, rpcmanager, settings):
-        AddressService.__init__(self, app, rpcmanager, settings)
+        AbstractService.__init__(self, app, rpcmanager, settings)
         self.businesses = {}
 
-    def on_address_change(self, coin):
-        try:
-            self.businesses[coin].on_address_change()
-        except Exception as e:
-            logging.error('on address change failed,%s' % e)
-
     def start_service(self):
-        AddressService.start_service(self)
-
         for d in self.settings['services']:
             if not d['enable']:
                 continue
@@ -44,9 +36,6 @@ class ScanService(AddressService):
 
         self.registe_service('/service/%s/block/number',
                              self.process_get_block_number, 'block_number')
-
-    def stop(self):
-        AddressService.stop(self)
 
     def process_get_block_number(self, rpc, setting):
         self.get_best_block_number(rpc)
