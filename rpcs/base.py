@@ -14,7 +14,7 @@ class Base:
     def get_transaction(self, txid):
         pass
 
-    def total_supply(self, token_name=None):
+    def get_total_supply(self, token_name=None):
         pass
 
     def best_block_number(self):

@@ -52,7 +52,7 @@ class Etp(Base):
     def get_coins(self):
         coins = []
         for x in self.tokens:
-            supply = self.total_supply(x['name'])
+            supply = self.get_total_supply(x['name'])
             if supply != 0:
                 coin = Coin()
                 coin.name = self.name
@@ -62,7 +62,7 @@ class Etp(Base):
                 coins.append(coin)
         return coins
 
-    def total_supply(self, token_name=None):
+    def get_total_supply(self, token_name=None):
         res = self.make_request('getasset', [token_name])
         assets = res['result']
         if len(assets) > 0:
