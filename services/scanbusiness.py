@@ -20,7 +20,7 @@ class ScanBusiness(IBusiness):
     def __init__(self, service, rpc, setting):
         IBusiness.__init__(self, service, rpc, setting)
         self.coin = setting['coin']
-        self.addresses = set()
+        self.addresses = setting['scan_address']
         self.status = 0
         self.swaps = {}
 

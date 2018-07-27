@@ -67,7 +67,8 @@
                 "feedback":"http://127.0.0.1:8081/swap",
                 "retry_interval":300,
                 "account":"test1",
-                "passphrase":"test1",
+                "passphrase":"test123456",
+                "scan_address":"tU2wKr9J3byZA9J4R7TFvRXCGur5hkgeUe",
                 "enable":false
             },
             {
@@ -77,6 +78,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
+                "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
                 "enable":false
             },
             {
@@ -86,6 +88,7 @@
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "passphrase":"xiao123456",
+                "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
                 "enable":true
             }
         ]
