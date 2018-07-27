@@ -79,7 +79,7 @@
                 "retry_interval":300,
                 "passphrase":"xiao123456",
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
-                "enable":false
+                "enable":true
             },
             {
                 "rpc":3,
@@ -89,7 +89,7 @@
                 "retry_interval":300,
                 "passphrase":"xiao123456",
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
-                "enable":true
+                "enable":false
             }
         ]
     }

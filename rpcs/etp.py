@@ -116,6 +116,7 @@ class Etp(Base):
                     tx['script'] = output['script']
                     tx['token'] = output['attachment']['symbol']
                     tx['value'] = int(output['attachment']['quantity'])
+                    tx['from'] = None
 
                 elif output['attachment']['type'] == 'message':
                     address = output['attachment']['content'].lower()

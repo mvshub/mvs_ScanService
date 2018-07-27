@@ -46,7 +46,8 @@ class ScanBusiness(IBusiness):
 
         item = Swap()
         item.coin = self.coin
-        item.to_address = swap['swap_address']
+        item.swap_address = swap['swap_address']
+        item.from_address = swap['from']
         item.token = swap['token']
         item.amount = swap['amount']
         item.block_height = swap['height']
@@ -119,6 +120,7 @@ class ScanBusiness(IBusiness):
         for swap in swaps:
             swap['amount'] = swap['value']
             swap['height'] = int(swap['blockNumber'])
+
         self.commit_swaps(swaps)
 
         for bd in binders:
