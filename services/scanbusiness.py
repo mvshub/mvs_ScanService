@@ -1,7 +1,7 @@
 from services.ibusiness import IBusiness
-from models import process
-from models.status import Status
 from models import db
+from models.constants import Status
+from models.scan import Scan
 from models.swap import Swap
 from models.binder import Binder
 from models.coin import Coin
@@ -26,9 +26,9 @@ class ScanBusiness(IBusiness):
 
     @timeit
     def load_status(self):
-        s = db.session.query(Status).filter_by(coin=self.coin).first()
+        s = db.session.query(Scan).filter_by(coin=self.coin).first()
         if not s:
-            s = Status()
+            s = Scan()
             s.coin = self.coin
             s.height = 1
 
@@ -55,7 +55,7 @@ class ScanBusiness(IBusiness):
         item.tx_index = swap['index']
         item.output_index = swap.get('output_index')
         item.create_time = int(time.time() * 1000)
-        item.status = process.PROCESS_SWAP_NEW
+        item.status = int(Status.Swap_New)
 
         db.session.add(item)
         db.session.flush()
@@ -129,9 +129,9 @@ class ScanBusiness(IBusiness):
             self.status, len(block['txs']), len(swaps), len(binders)))
 
         if swaps or self.status % 50 == 0:
-            s = db.session.query(Status).filter_by(coin=self.coin).first()
+            s = db.session.query(Scan).filter_by(coin=self.coin).first()
             if not s:
-                s = Status()
+                s = Scan()
                 s.coin = self.coin
             s.height = self.status
 

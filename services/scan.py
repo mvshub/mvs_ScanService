@@ -2,7 +2,6 @@ from services.abstract import AbstractService
 from services.scanbusiness import ScanBusiness
 from utils import response
 from models.swap import Swap
-from models import process
 from models import db
 import logging
 

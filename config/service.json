@@ -49,7 +49,7 @@
                 {
                     "name":"SMT",
                     "contract_address":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
-                    "enable":true,
+                    "enable":false,
                     "decimal": 4
                 }
             ]
@@ -68,7 +68,7 @@
                 "retry_interval":300,
                 "account":"test1",
                 "passphrase":"test123456",
-                "scan_address":"tU2wKr9J3byZA9J4R7TFvRXCGur5hkgeUe",
+                "scan_address":"MG8NrUax9CwCmXxYcGFcEsDxYMMC2WyPvk",
                 "enable":false
             },
             {
