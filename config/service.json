@@ -42,7 +42,7 @@
             "tokens": [
                 {
                     "name":"ABC",
-                    "contract_address":"0x0506e5ef752ea1129a7e6ed41df5e93131beE8a7",
+                    "contract_address":"0x0506e5ef752ea1129a7e6ed41df5e93131bee8a7",
                     "enable":true,
                     "decimal": 5
                 },
@@ -67,7 +67,7 @@
                 "feedback":"http://127.0.0.1:8081/swap",
                 "retry_interval":300,
                 "account":"test1",
-                "passphrase":"test123456",
+                "passphrase":"test1",
                 "enable":false
             },
             {

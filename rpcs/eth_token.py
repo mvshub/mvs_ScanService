@@ -144,7 +144,8 @@ class EthToken(Eth):
 
         block['txs']=[]
         for i, tx in enumerate(block['transactions']):
-            if tx['to'] is None or tx['to'] not in (self.contract_addresses,self.contract_mapaddress):
+            if tx['to'] is None \
+            or (tx['to'] not in self.contract_addresses and tx['to'] != self.contract_mapaddress):
                 tx['to'] = 'create contract'
                 continue
 
@@ -158,10 +159,11 @@ class EthToken(Eth):
             tx['time'] = int(block['timestamp'], 16)
             tx['isBinder'] = False
             tx['type'] = self.name
-            input_ = tx['input']
+            input_ = tx['input']         
             if tx['to'] in self.contract_addresses:
                 if len(input_) != 138:
                     continue
+               
                 value = int('0x' + input_[74:], 16)
                 to_addr = '0x' + input_[34:74]
                 if to_addr not in addresses:
