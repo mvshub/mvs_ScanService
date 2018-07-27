@@ -165,22 +165,22 @@ class EthToken(Eth):
             if tx['to'] in self.contract_addresses:
                 if len(input_) != 138:
                     continue
-               
                 value = int('0x' + input_[74:], 16)
                 to_addr = '0x' + input_[34:74]
                 if to_addr not in addresses:
                     continue
                 tx['swap_address'] = to_addr
-                tx['to'] = None
                 tx['value'] = value
                 tx['amount'] = value
                 tx['token'] = self.symbol(contract=tx['to'])
+                tx['to'] = None
+
 
             else:
                 if len(input_) != 202:
                     continue
                 strLen = int('0x' + input_[134:138], 16)
-                tx['to'] = str(binascii.unhexlify(input_[138:202])[:strLen], "utf-8")
+                tx['swap_address'] = str(binascii.unhexlify(input_[138:202])[:strLen], "utf-8")
 
                 tx['isBinder'] = True
                 logging.info('new binder found, from:%s, to:%s' % (tx['from'], tx['to']))
