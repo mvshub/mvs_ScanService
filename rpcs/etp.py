@@ -127,7 +127,7 @@ class Etp(Base):
 
             if tx.get('token') is not None and tx.get('to') is not None:
                 address = tx.get('to')
-                if self.is_invalid_to_address(address):
+                if self.is_to_address_valid(address):
                     logging.error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
                     continue
@@ -139,7 +139,7 @@ class Etp(Base):
         res['txs'] = txs
         return res
 
-    def is_invalid_to_address(self, address):
+    def is_to_address_valid(self, address):
         return address is None or len(address) < 42 or not self.is_hex(address[2:])
 
     def is_hex(self, s):
@@ -159,7 +159,7 @@ class Etp(Base):
         if tx['token'] not in self.token_names:
             return False
 
-        if self.is_invalid_to_address(tx['to']):
+        if self.is_to_address_valid(tx['to']):
             return False
 
         if set(tx['input_addresses']).intersection(set(addresses)):

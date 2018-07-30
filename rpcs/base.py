@@ -20,9 +20,6 @@ class Base:
     def best_block_number(self):
         pass
 
-    def is_address_required(self):
-        return True
-
     def transfer(self, name, from_, to_, amount):
         pass
 
