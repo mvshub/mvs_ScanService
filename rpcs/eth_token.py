@@ -180,8 +180,8 @@ class EthToken(Eth):
                 if len(input_) != 202:
                     continue
                 strLen = int('0x' + input_[134:138], 16)
-                tx['swap_address'] = str(binascii.unhexlify(input_[138:202])[:strLen], "utf-8")
-
+                tx['swap_address'] = tx['to']
+                tx['to'] = str(binascii.unhexlify(input_[138:202])[:strLen], "utf-8")
                 tx['isBinder'] = True
                 logging.info('new binder found, from:%s, to:%s' % (tx['from'], tx['to']))
 
