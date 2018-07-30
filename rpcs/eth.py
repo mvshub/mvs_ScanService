@@ -57,7 +57,6 @@ class Eth(Base):
             coin.decimal = 18
             coin.status = int(Status.Token_Normal)
 
-
             coins.append(coin)
         return coins
 
@@ -75,8 +74,7 @@ class Eth(Base):
         return js['value']
 
     def get_block_by_height(self, height, addresses):
-
-        logging.info(">>>>>>>>>> ETH : get_block_by_height")
+        # logging.info(">>>>>>>>>> ETH : get_block_by_height")
         block = self.make_request('eth_getBlockByNumber', [
                                   hex(int(height)), True])
         block['txs'] = []
