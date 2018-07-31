@@ -10,7 +10,7 @@ from utils import notify
 from utils.timeit import timeit
 import threading
 import time
-import logging
+from utils.log.logger import Logger
 from decimal import Decimal
 from functools import partial
 
@@ -41,7 +41,7 @@ class ScanBusiness(IBusiness):
         r = db.session.query(Swap).filter_by(
             coin=self.coin, tx_hash=swap['hash']).first()
         if r:
-            logging.info('swap already existed')
+            Logger.info('swap already existed')
             return
 
         item = Swap()
@@ -74,7 +74,7 @@ class ScanBusiness(IBusiness):
     def commit_binder(self, binder_):
         r = db.session.query(Binder).filter_by(tx_hash=binder_['hash']).all()
         if r:
-            logging.info('binder already existed,from: %s, to: %s , tx_hash: %s' % (
+            Logger.info('binder already existed,from: %s, to: %s , tx_hash: %s' % (
                 binder_['from'], binder_['to'], binder_['hash']))
             return
 
@@ -112,11 +112,11 @@ class ScanBusiness(IBusiness):
         for tx in block['txs']:
             if tx.get('isBinder', False) == True:
                 binders.append(tx)
-                logging.info(' binder address, from:%s, to:%s' %
-                             (tx['from'], tx['to']))
+                Logger.info(' binder address, from:%s, to:%s' %
+                            (tx['from'], tx['to']))
             elif rpc.is_swap(tx, self.addresses):
                 swaps.append(tx)
-                logging.info('new swap found: %s' % tx)
+                Logger.info('new swap found: %s' % tx)
 
         for swap in swaps:
             swap['amount'] = swap['value']
@@ -128,7 +128,7 @@ class ScanBusiness(IBusiness):
             bd['height'] = int(bd['blockNumber'])
         self.commit_binders(binders)
 
-        logging.info("> scan block {} : {} txs, {} swaps, {} binders".format(
+        Logger.info("> scan block {} : {} txs, {} swaps, {} binders".format(
             self.status, len(block['txs']), len(swaps), len(binders)))
 
         if swaps or self.status % 50 == 0:

@@ -1,9 +1,9 @@
 from rpcs.base import Base
 import requests
+from utils.log.logger import Logger
 from utils.exception import RpcException, CriticalException
 import json
 import decimal
-import logging
 import binascii
 from models.coin import Coin
 from models.constants import Status
@@ -67,14 +67,14 @@ class Eth(Base):
         try:
             js = json.loads(res.text)
         except Exception as e:
-            logging.error(
+            Logger.error(
                 'bad response content, failed to parse,%s' % res.text)
             return 0
 
         return js['value']
 
     def get_block_by_height(self, height, addresses):
-        # logging.info(">>>>>>>>>> ETH : get_block_by_height")
+        # Logger.info(">>>>>>>>>> ETH : get_block_by_height")
         block = self.make_request('eth_getBlockByNumber', [
                                   hex(int(height)), True])
         block['txs'] = []
@@ -97,8 +97,8 @@ class Eth(Base):
                     input_[138:202])[:strLen], "utf-8")
 
                 tx['isBinder'] = True
-                logging.info('new binder found, from:%s, to:%s' %
-                             (tx['from'], tx['to']))
+                Logger.info('new binder found, from:%s, to:%s' %
+                            (tx['from'], tx['to']))
             else:
                 if tx['to'] not in addresses:
                     continue

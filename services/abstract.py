@@ -3,9 +3,10 @@ from utils import response
 from functools import partial
 from flask import request
 import json
+from utils.log.logger import Logger
 from utils.parameter import parameter_check
 import time
-import logging
+import traceback
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
@@ -32,7 +33,7 @@ class AbstractService(IService):
         )
 
     def registe_service(self, uri, f, name, methods=['GET']):
-        logging.info('register service, {}, {}, {}'.format(uri, name, methods))
+        Logger.info('register service, {}, {}, {}'.format(uri, name, methods))
         self.services.append(
             {'uri': uri, 'f': f, 'name': name, 'methods': methods})
 
@@ -45,7 +46,7 @@ class AbstractService(IService):
                 url = s['uri'] % d['coin']
                 endpoint = s['name']
                 #'%s_%s' % (s['name'], i)
-                logging.info('route {}'.format(url))
+                Logger.info('route {}'.format(url))
                 f = partial(
                     s['f'], self.rpcmanager.get_available_feed(d['rpc']))
                 app.add_url_rule(rule=url, endpoint=endpoint,
@@ -68,10 +69,8 @@ class AbstractService(IService):
                 self.__tasks.extend(new_tasks)
                 time.sleep(self._interval)
             except Exception as e:
-                logging.error('work exception, {}'.format(e))
-                import traceback
-                tb = traceback.format_exc()
-                logging.error('%s', tb)
+                Logger.error('work exception, {}'.format(e))
+                Logger.error('{}'.format(traceback.format_exc()))
 
     def post(self, f):
         self.__tasks.append(f)

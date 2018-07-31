@@ -1,9 +1,9 @@
 from rpcs.base import Base
 import requests
+from utils.log.logger import Logger
 from utils.exception import RpcException, CriticalException
 import json
 import decimal
-import logging
 from models.coin import Coin
 from models.constants import Status
 
@@ -17,7 +17,7 @@ class Etp(Base):
         self.name = 'ETP'
         self.tokens = settings['tokens']
         self.token_names = [x['name'] for x in self.tokens]
-        logging.info("init type {}, tokens: {}".format(
+        Logger.info("init type {}, tokens: {}".format(
             self.name, self.token_names))
 
     def start(self):
@@ -83,7 +83,7 @@ class Etp(Base):
             if result:
                 tx_hash = result['hash']
         except RpcException as e:
-            logging.error("failed to secondary_issue: {}".format(str(e)))
+            Logger.error("failed to secondary_issue: {}".format(str(e)))
             raise
         return tx_hash
 
@@ -134,12 +134,12 @@ class Etp(Base):
             if tx.get('token') is not None and tx.get('to') is not None:
                 address = tx.get('to')
                 if self.is_to_address_valid(address):
-                    logging.error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
+                    Logger.error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
                     continue
 
                 txs.append(tx)
-                logging.info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
+                Logger.info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
                     tx['token'], tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
 
         res['txs'] = txs
@@ -183,7 +183,7 @@ class Etp(Base):
             if result:
                 result['blockNumber'] = result['height']
         except RpcException as e:
-            logging.error("failed to get transaction: {}".format(str(e)))
+            Logger.error("failed to get transaction: {}".format(str(e)))
             raise
         return result
 

@@ -1,9 +1,9 @@
 from services.abstract import AbstractService
 from services.scanbusiness import ScanBusiness
 from utils import response
+from utils.log.logger import Logger
 from models.swap import Swap
 from models import db
-import logging
 
 
 class ScanService(AbstractService):
@@ -20,7 +20,7 @@ class ScanService(AbstractService):
             coin = d['coin']
             rpc = self.rpcmanager.get_available_feed(d['rpc'])
 
-            logging.info(
+            Logger.info(
                 "start ScanBusiness for {}, height: {}, with setting {}".format(
                     coin, self.best_block_number, d))
 
