@@ -96,14 +96,20 @@ class Etp(Base):
         for i, trans in enumerate(transactions):
             input_addresses = [input_['address'] for input_ in trans[
                 'inputs'] if input_.get('address') is not None]
+            input_addresses = list(set(input_addresses))
+            from_addr = input_addresses[0] if len(
+                input_addresses) == 1 else None
 
             tx = {}
             for j, output in enumerate(trans['outputs']):
-                to_addr = '' if output.get(
-                    'address') is None else output['address']
 
                 if output['attachment']['type'] == 'asset-transfer':
+                    to_addr = '' if output.get(
+                        'address') is None else output['address']
                     if to_addr not in addresses:
+                        continue
+
+                    if from_addr == to_addr:
                         continue
 
                     tx['type'] = 'ETP'
@@ -117,7 +123,7 @@ class Etp(Base):
                     tx['script'] = output['script']
                     tx['token'] = output['attachment']['symbol']
                     tx['value'] = int(output['attachment']['quantity'])
-                    tx['from'] = None
+                    tx['from'] = from_addr
 
                 elif output['attachment']['type'] == 'message':
                     address = output['attachment']['content'].lower()
@@ -133,8 +139,8 @@ class Etp(Base):
                     continue
 
                 txs.append(tx)
-                logging.info("transfer {} - {}, height: {}, hash: {}, to: {}".format(
-                    tx['token'], tx['value'], tx['blockNumber'], tx['hash'], address))
+                logging.info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
+                    tx['token'], tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
 
         res['txs'] = txs
         return res
