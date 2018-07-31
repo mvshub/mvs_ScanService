@@ -33,7 +33,7 @@ class AbstractService(IService):
         )
 
     def registe_service(self, uri, f, name, methods=['GET']):
-        Logger.info('register service, {}, {}, {}'.format(uri, name, methods))
+        Logger.get().info('register service, {}, {}, {}'.format(uri, name, methods))
         self.services.append(
             {'uri': uri, 'f': f, 'name': name, 'methods': methods})
 
@@ -46,7 +46,7 @@ class AbstractService(IService):
                 url = s['uri'] % d['coin']
                 endpoint = s['name']
                 #'%s_%s' % (s['name'], i)
-                Logger.info('route {}'.format(url))
+                Logger.get().info('route {}'.format(url))
                 f = partial(
                     s['f'], self.rpcmanager.get_available_feed(d['rpc']))
                 app.add_url_rule(rule=url, endpoint=endpoint,
@@ -69,8 +69,8 @@ class AbstractService(IService):
                 self.__tasks.extend(new_tasks)
                 time.sleep(self._interval)
             except Exception as e:
-                Logger.error('work exception, {}'.format(e))
-                Logger.error('{}'.format(traceback.format_exc()))
+                Logger.get().error('work exception, {}'.format(e))
+                Logger.get().error('{}'.format(traceback.format_exc()))
 
     def post(self, f):
         self.__tasks.append(f)

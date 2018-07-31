@@ -67,14 +67,14 @@ class Eth(Base):
         try:
             js = json.loads(res.text)
         except Exception as e:
-            Logger.error(
+            Logger.get().error(
                 'bad response content, failed to parse,%s' % res.text)
             return 0
 
         return js['value']
 
     def get_block_by_height(self, height, addresses):
-        # Logger.info(">>>>>>>>>> ETH : get_block_by_height")
+        # Logger.get().info(">>>>>>>>>> ETH : get_block_by_height")
         block = self.make_request('eth_getBlockByNumber', [
                                   hex(int(height)), True])
         block['txs'] = []
@@ -97,7 +97,7 @@ class Eth(Base):
                     input_[138:202])[:strLen], "utf-8")
 
                 tx['isBinder'] = True
-                Logger.info('new binder found, from:%s, to:%s' %
+                Logger.get().info('new binder found, from:%s, to:%s' %
                             (tx['from'], tx['to']))
             else:
                 if tx['to'] not in addresses:

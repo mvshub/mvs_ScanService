@@ -15,7 +15,7 @@ def notify_swap(swap, best_block_height, feedback):
         'token': swap.token,
         'amount': swap.amount
     }
-    Logger.info('notify swap, %s' % data)
+    Logger.get().info('notify swap, %s' % data)
 
     from utils.crypto import sign_data, encrypt
     import os

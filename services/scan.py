@@ -20,7 +20,7 @@ class ScanService(AbstractService):
             coin = d['coin']
             rpc = self.rpcmanager.get_available_feed(d['rpc'])
 
-            Logger.info(
+            Logger.get().info(
                 "start ScanBusiness for {}, height: {}, with setting {}".format(
                     coin, self.best_block_number, d))
 

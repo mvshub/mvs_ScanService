@@ -23,7 +23,7 @@ class EthToken(Eth):
             self.token_names.append(x['name'])
             self.contract_addresses.append(x['contract_address'])
 
-        Logger.info("EthToken: contract_address: {}, contract_mapaddress".format(
+        Logger.get().info("EthToken: contract_address: {}, contract_mapaddress".format(
             self.contract_addresses, self.contract_mapaddress))
 
     def start(self):
@@ -182,7 +182,7 @@ class EthToken(Eth):
                 tx['to'] = str(binascii.unhexlify(
                     input_[138:202])[:strLen], "utf-8")
                 tx['isBinder'] = True
-                Logger.info('new binder found, from:%s, to:%s' %
+                Logger.get().info('new binder found, from:%s, to:%s' %
                             (tx['from'], tx['to']))
 
             block['txs'].append(tx)

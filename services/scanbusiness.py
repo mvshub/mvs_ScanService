@@ -41,7 +41,7 @@ class ScanBusiness(IBusiness):
         r = db.session.query(Swap).filter_by(
             coin=self.coin, tx_hash=swap['hash']).first()
         if r:
-            Logger.info('swap already existed')
+            Logger.get().info('swap already existed')
             return
 
         item = Swap()
@@ -74,7 +74,7 @@ class ScanBusiness(IBusiness):
     def commit_binder(self, binder_):
         r = db.session.query(Binder).filter_by(tx_hash=binder_['hash']).all()
         if r:
-            Logger.info('binder already existed,from: %s, to: %s , tx_hash: %s' % (
+            Logger.get().info('binder already existed,from: %s, to: %s , tx_hash: %s' % (
                 binder_['from'], binder_['to'], binder_['hash']))
             return
 
@@ -112,11 +112,11 @@ class ScanBusiness(IBusiness):
         for tx in block['txs']:
             if tx.get('isBinder', False) == True:
                 binders.append(tx)
-                Logger.info(' binder address, from:%s, to:%s' %
+                Logger.get().info(' binder address, from:%s, to:%s' %
                             (tx['from'], tx['to']))
             elif rpc.is_swap(tx, self.addresses):
                 swaps.append(tx)
-                Logger.info('new swap found: %s' % tx)
+                Logger.get().info('new swap found: %s' % tx)
 
         for swap in swaps:
             swap['amount'] = swap['value']
@@ -128,7 +128,7 @@ class ScanBusiness(IBusiness):
             bd['height'] = int(bd['blockNumber'])
         self.commit_binders(binders)
 
-        Logger.info("> scan block {} : {} txs, {} swaps, {} binders".format(
+        Logger.get().info("> scan block {} : {} txs, {} swaps, {} binders".format(
             self.status, len(block['txs']), len(swaps), len(binders)))
 
         if swaps or self.status % 50 == 0:
