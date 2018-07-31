@@ -13,11 +13,11 @@ class Status(IntEnum):
     Swap_Send = 3
     Swap_Finish = 4
 
-    Tx_Unconfirm = 5
-    Tx_Confirm = 6
+    Tx_Unconfirm = 0
+    Tx_Confirm = 1
 
-    Token_Normal = 7
-    Token_Issue = 8
+    Token_Normal = 0
+    Token_Issue = 1
 
 
 class Error(IntEnum):
