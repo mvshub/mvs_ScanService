@@ -6,7 +6,8 @@
 ```
 In this directory,
 1. For each scan token(ie. etp), there is a project sub-directory(ie. etp), and deploy service in this sub-directory.
-2. It also has a `config` sub-directory which is used to backup config files for all services of each token.
+2. It has a `config` sub-directory which is used to backup config files for all services of each token.
+3. It has a `src` sub-directory which concludes the common source code to be deployed separately for each service.
 
 # scripts descripion
 
@@ -22,7 +23,8 @@ In this directory,
 
 ## deploy service
 ```
-./deploy.sh
+./deploy.sh (use rsync)
+./deploylocal.sh
 ```
 
 ## backup and restore config file
