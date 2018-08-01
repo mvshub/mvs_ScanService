@@ -1,6 +1,7 @@
 for i in "$@"; do
 
+PROJECT_DIR="~/TokenDroplet"
 echo "backup $i"
-cp -v ~/swaptoken/$i/TokenDroplet/config/service.json ~/swaptoken/config/$i.json
+cp -v ${PROJECT_DIR}/$i/ScanService/config/service.json ${PROJECT_DIR}/config/ScanService/$i.json
 
 done

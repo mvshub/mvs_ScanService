@@ -1,3 +1,13 @@
+# deploy paths introduction
+
+## Top work directory
+```
+~/TokenDroplet
+```
+In this directory,
+1. For each scan token(ie. etp), there is a project sub-directory(ie. etp), and deploy service in this sub-directory.
+2. It also has a `config` sub-directory which is used to backup config files for all services of each token.
+
 # scripts descripion
 
 ## clear database
