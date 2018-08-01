@@ -1,6 +1,7 @@
+PROJECT_DIR="~/TokenDroplet"
+
 for i in "$@"; do
 
-PROJECT_DIR="~/TokenDroplet"
 LOCAL_PATH="${PROJECT_DIR}/$i/ScanService"
 TARGET_PATH="${PROJECT_DIR}/$i"
 
