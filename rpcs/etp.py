@@ -74,19 +74,6 @@ class Etp(Base):
                 return supply
         return 0
 
-    def secondary_issue(self, account, passphase, to_did, symbol, volume):
-        tx_hash = None
-        try:
-            res = self.make_request(
-                'secondaryissue', [account, passphase, to_did, symbol, volume])
-            result = res['result']
-            if result:
-                tx_hash = result['hash']
-        except RpcException as e:
-            Logger.get().error("failed to secondary_issue: {}".format(str(e)))
-            raise
-        return tx_hash
-
     def get_block_by_height(self, height, addresses):
         res = self.make_request('getblock', [height])
         timestamp = res['result']['timestamp']
@@ -186,18 +173,6 @@ class Etp(Base):
             Logger.get().error("failed to get transaction: {}".format(str(e)))
             raise
         return result
-
-    def new_address(self, account, passphase):
-        res = self.make_request('getnewaddress', [account, passphase])
-        addresses = res['result']
-        if addresses is not None and len(addresses) > 0:
-            return addresses[0]
-        return None
-
-    def get_addresses(self, account, passphase):
-        res = self.make_request('listaddresses', [account, passphase])
-        addresses = res['result']
-        return addresses
 
     def best_block_number(self):
         res = self.make_request('getheight')

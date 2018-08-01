@@ -20,9 +20,6 @@ class Base:
     def best_block_number(self):
         pass
 
-    def transfer(self, name, from_, to_, amount):
-        pass
-
     def get_coins(self):
         pass
 

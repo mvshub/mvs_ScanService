@@ -90,19 +90,6 @@ class EthToken(Eth):
         strLen = int('0x' + symbol[126:130], 16)
         return str(binascii.unhexlify(symbol[130:194])[:strLen], "utf-8")
 
-    def transfer(self, name, passphrase, from_address, to_address, amount):
-        contract = self.get_contractaddress(name)
-        if contract is None:
-            return None
-
-        if len(to_address) == 42:
-            to_address = to_address[2:]
-
-        data = '0xa9059cbb' + ('0' * 24) + to_address + ('%064x' % amount)
-        res = self.make_request('eth_sendTransaction', [
-                                {'from': from_address, 'to': contract, 'data': data}])
-        return res, 0
-
     def decimals(self, name):
         for i in self.tokens:
             if i['name'] == name:

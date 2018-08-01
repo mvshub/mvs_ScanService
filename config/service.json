@@ -62,12 +62,10 @@
         "services":[
             {
                 "rpc":1,
-                "minconf":12,
                 "coin":"ETP",
+                "minconf":12,
                 "feedback":"http://127.0.0.1:8081/swap",
                 "retry_interval":300,
-                "account":"test1",
-                "passphrase":"test123456",
                 "scan_address":"MU2m1HpGdCBweykXxLtUou8v97woEu7Kux",
                 "enable":false
             },
@@ -77,7 +75,6 @@
                 "minconf":1,
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
-                "passphrase":"xiao123456",
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
                 "enable":false
             },
@@ -87,7 +84,6 @@
                 "minconf":1,
                 "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
-                "passphrase":"xiao123456",
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
                 "enable":true
             }

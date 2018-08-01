@@ -131,30 +131,9 @@ class Eth(Base):
         res['to'] = '' if res.get('to') is None else res['to']
         return res
 
-    def unlock_account(self, address, passphrase, unlock_time=10):
-        res = self.make_request('personal_unlockAccount', [
-                                address, passphrase, unlock_time])
-        return res
-
-    def new_address(self, account, passphase):
-        res = self.make_request('personal_newAccount', [passphase])
-        return res
-
-    def get_addresses(self, account, passphase):
-        res = self.make_request('eth_accounts', [])
-        return res
-
     def estimate_gas(self, options):
         res = self.make_request('eth_estimateGas', [options])
         return int(res, 16)
-
-    def transfer(self, passphrase, from_, to_, amount):
-        options = {'from': from_, 'to': to_, 'value': hex(int(amount))}
-        gas = self.estimate_gas(options)
-        options['gas'] = gas
-
-        res = self.make_request('eth_sendTransaction', [options])
-        return res, gas * self.settings['gasPrice']
 
     def best_block_number(self):
         res = self.make_request('eth_blockNumber')
