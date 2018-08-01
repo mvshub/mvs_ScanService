@@ -9,31 +9,42 @@ In this directory,
 2. It has a `config` sub-directory which is used to backup config files for all services of each token.
 3. It has a `src` sub-directory which concludes the common source code to be deployed separately for each service.
 
+# deploy steps
+```
+TOKENS="etp eth ethtoken"
+1. ./deploylocal.sh $TOKENS
+2. ./backup.sh $TOKENS
+3. edit config file in `config` sub-directory
+    modify "port" number to not conflict with each other
+    modify "enable" of scans services to enable only one needed scan service
+4. ./start $TOKENS
+```
+
 # scripts descripion
 
 ## clear database
 ```
-./cleardb.sh
+./cleardb.sh $TOKENS
 ```
 
 ## start service
 ```
-./start.sh
+./start.sh $TOKENS
 ```
 
 ## deploy service
 ```
-./deploy.sh (use rsync)
-./deploylocal.sh
+./deploy.sh $TOKENS (use rsync)
+./deploylocal.sh $TOKENS
 ```
 
 ## backup and restore config file
 ```
-./backup.sh
-./restore.sh
+./backup.sh $TOKENS
+./restore.sh $TOKENS
 ```
 
-## example
+## examples of passing parameters
 ```
 ./start.sh etp
 ./start.sh etp eth
