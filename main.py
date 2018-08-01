@@ -1,4 +1,4 @@
-from services.service import WalletService
+from services.service import MainService
 from utils.log.logger import Logger
 import json
 import signal
@@ -7,7 +7,7 @@ import traceback
 
 def main():
     settings = json.loads(open('config/service.json').read())
-    service = WalletService(settings)
+    service = MainService(settings)
 
     def stop_signal(a, b):
         Logger.get().info('receive signal,%s,%s' % (a, b))

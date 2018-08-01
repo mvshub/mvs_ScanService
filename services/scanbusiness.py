@@ -6,7 +6,6 @@ from models.swap import Swap
 from models.binder import Binder
 from models.coin import Coin
 from utils import response
-from utils import notify
 from utils.timeit import timeit
 import threading
 import time
@@ -113,7 +112,7 @@ class ScanBusiness(IBusiness):
             if tx.get('isBinder', False) == True:
                 binders.append(tx)
                 Logger.get().info(' binder address, from:%s, to:%s' %
-                            (tx['from'], tx['to']))
+                                  (tx['from'], tx['to']))
             elif rpc.is_swap(tx, self.addresses):
                 swaps.append(tx)
                 Logger.get().info('new swap found: %s' % tx)

@@ -14,7 +14,7 @@ from gevent import monkey
 monkey.patch_all()
 
 
-class WalletService(IService):
+class MainService(IService):
 
     def __init__(self, settings):
         self.app = None
@@ -56,7 +56,7 @@ class WalletService(IService):
         self.http = WSGIServer(
             (self.settings['host'], self.settings['port']), self.app.wsgi_app)
         Logger.get().info('server %s:%s' %
-                    (self.settings['host'], self.settings['port']))
+                          (self.settings['host'], self.settings['port']))
         self.http.serve_forever()
 
     def stop(self):

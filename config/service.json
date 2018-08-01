@@ -64,7 +64,6 @@
                 "rpc":1,
                 "coin":"ETP",
                 "minconf":12,
-                "feedback":"http://127.0.0.1:8081/swap",
                 "retry_interval":300,
                 "scan_address":"MU2m1HpGdCBweykXxLtUou8v97woEu7Kux",
                 "enable":false
@@ -73,7 +72,6 @@
                 "rpc":2,
                 "coin":"ETH",
                 "minconf":1,
-                "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
                 "enable":false
@@ -82,7 +80,6 @@
                 "rpc":3,
                 "coin":"ETHToken",
                 "minconf":1,
-                "feedback":"http://127.0.0.1:8081/test",
                 "retry_interval":300,
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
                 "enable":true

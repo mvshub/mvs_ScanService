@@ -98,7 +98,7 @@ class Eth(Base):
 
                 tx['isBinder'] = True
                 Logger.get().info('new binder found, from:%s, to:%s' %
-                            (tx['from'], tx['to']))
+                                  (tx['from'], tx['to']))
             else:
                 if tx['to'] not in addresses:
                     continue
