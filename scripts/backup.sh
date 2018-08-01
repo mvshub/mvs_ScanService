@@ -1,4 +1,4 @@
-PROJECT_DIR="~/TokenDroplet"
+PROJECT_DIR="${HOME}/TokenDroplet"
 
 for i in "$@"; do
 

@@ -1,4 +1,4 @@
-PROJECT_DIR="~/TokenDroplet"
+PROJECT_DIR="${HOME}/TokenDroplet"
 SOURCE_DIR="${PROJECT_DIR}/src/ScanService"
 
 if [ ! -e "$SOURCE_DIR" ]; then
