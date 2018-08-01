@@ -1,4 +1,4 @@
-for i in `cat supported_tokens.txt`;do
+for i in "$@"; do
 
 local_path=~/swaptoken/$i/TokenDroplet
 target_path=/home/ubuntu/swaptoken/$i
