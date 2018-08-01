@@ -149,14 +149,11 @@ class Etp(Base):
         return re.fullmatch(r"^[0-9a-f]+", s) is not None
 
     def is_swap(self, tx, addresses):
-        if tx['type'] != self.name:
+        if 'type' not in tx or tx['type'] != self.name:
             return False
         if tx['value'] <= 0:
             return False
-        if tx['token'] is None:
-            return False
-
-        if tx['token'] not in self.token_names:
+        if tx['token'] is None or tx['token'] not in self.token_names:
             return False
 
         if self.is_to_address_valid(tx['to']):

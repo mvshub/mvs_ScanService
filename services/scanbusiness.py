@@ -20,7 +20,7 @@ class ScanBusiness(IBusiness):
         IBusiness.__init__(self, service, rpc, setting)
         self.coin = setting['coin']
         self.scan_address = setting['scan_address']
-        self.status = 0
+        self.scan_height = 0
         self.swaps = {}
 
         if not self.rpc.is_address_valid(self.scan_address):
@@ -38,7 +38,7 @@ class ScanBusiness(IBusiness):
 
             db.session.add(s)
             db.session.commit()
-        self.status = s.height
+        self.scan_height = s.height
 
     @timeit
     def commit_swap(self, swap):
@@ -105,10 +105,10 @@ class ScanBusiness(IBusiness):
             best_block_number = self.service.best_block_number
         except Exception as e:
             return True
-        if (best_block_number - self.status + 1) < self.setting['minconf']:
+        if (best_block_number - self.scan_height + 1) < self.setting['minconf']:
             return True
 
-        block = rpc.get_block_by_height(self.status, self.scan_address)
+        block = rpc.get_block_by_height(self.scan_height, self.scan_address)
         swaps = []
         binders = []
         for tx in block['txs']:
@@ -131,14 +131,14 @@ class ScanBusiness(IBusiness):
         self.commit_binders(binders)
 
         Logger.get().info("> scan block {} : {} txs, {} swaps, {} binders".format(
-            self.status, len(block['txs']), len(swaps), len(binders)))
+            self.scan_height, len(block['txs']), len(swaps), len(binders)))
 
-        if swaps or self.status % 50 == 0:
+        if swaps or self.scan_height % 50 == 0:
             s = db.session.query(Scan).filter_by(coin=self.coin).first()
             if not s:
                 s = Scan()
                 s.coin = self.coin
-            s.height = self.status
+            s.height = self.scan_height
 
             db.session.add(s)
 
@@ -148,13 +148,13 @@ class ScanBusiness(IBusiness):
                     name=c.name, token=c.token).first()
                 if s is None:
                     s = c
-                s.block_height = self.status
+                s.block_height = self.scan_height
                 s.total_supply = c.total_supply
                 db.session.add(s)
 
             db.session.commit()
 
-        self.status += 1
+        self.scan_height += 1
         return True
 
     def start(self):
