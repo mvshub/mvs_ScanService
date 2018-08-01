@@ -136,7 +136,7 @@ class Etp(Base):
         return address is None or len(address) < 42 or not self.is_hex(address[2:])
 
     def is_address_valid(self, address):
-        if address is None:
+        if address is None or address == '':
             return False
 
         res = self.make_request('validateaddress', [address])
