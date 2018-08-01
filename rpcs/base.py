@@ -1,15 +1,20 @@
 import decimal
 
+
 class Base:
+
     def __init__(self, settings):
         self.settings = settings
         self.name = ''
 
-    def get_balance(self, name,address):
+    def get_balance(self, name, address):
         pass
 
     def is_swap(self, name, tx, addresses):
         pass
+
+    def is_address_valid(self, address):
+        return address is not None and address != ''
 
     def get_transaction(self, txid):
         pass

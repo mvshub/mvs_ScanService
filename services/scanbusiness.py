@@ -19,9 +19,14 @@ class ScanBusiness(IBusiness):
     def __init__(self, service, rpc, setting):
         IBusiness.__init__(self, service, rpc, setting)
         self.coin = setting['coin']
-        self.addresses = setting['scan_address']
+        self.scan_address = setting['scan_address']
         self.status = 0
         self.swaps = {}
+
+        if not self.rpc.is_address_valid(self.scan_address):
+            info = "invalid scan address: {}".format(self.scan_address)
+            Logger.get().error(info)
+            raise Exception(info)
 
     @timeit
     def load_status(self):
@@ -102,10 +107,8 @@ class ScanBusiness(IBusiness):
             return True
         if (best_block_number - self.status + 1) < self.setting['minconf']:
             return True
-        if not self.addresses:
-            return True
 
-        block = rpc.get_block_by_height(self.status, self.addresses)
+        block = rpc.get_block_by_height(self.status, self.scan_address)
         swaps = []
         binders = []
         for tx in block['txs']:
@@ -113,7 +116,7 @@ class ScanBusiness(IBusiness):
                 binders.append(tx)
                 Logger.get().info(' binder address, from:%s, to:%s' %
                                   (tx['from'], tx['to']))
-            elif rpc.is_swap(tx, self.addresses):
+            elif rpc.is_swap(tx, self.scan_address):
                 swaps.append(tx)
                 Logger.get().info('new swap found: %s' % tx)
 
