@@ -1,18 +1,25 @@
 PROJECT_DIR="${HOME}/TokenDroplet"
+SOURCE_DIR="${PROJECT_DIR}/src/ScanService"
+
+echo "get latest source code from github"
+if [ ! -e "$SOURCE_DIR" ]; then
+    mkdir -p "${PROJECT_DIR}/src"
+    cd "${PROJECT_DIR}/src"
+    echo "clone ScanService.git ..."
+    git clone https://gitee.com/metaverse/ScanService.git
+else
+    cd "$SOURCE_DIR"
+    echo "pull ScanService.git ..."
+    git pull origin master
+fi
 
 for i in "$@"; do
 
-LOCAL_PATH="${PROJECT_DIR}/$i/ScanService"
 TARGET_PATH="${PROJECT_DIR}/$i"
-
 echo "deploy $i to ${TARGET_PATH}";
-
-REMOTE_HOST="ubuntu@dev1.xinyuanjie.org"
-REMOTE_COMMAND="test -d ${TARGET_PATH} || mkdir -p ${TARGET_PATH}"
-ssh -i ${HOME}/.ssh/id_rsa -p 12008 $REMOTE_HOST $REMOTE_COMMAND
-
-EXCLUDES="--exclude '*.pyc' --exclude '*.log' --exclude 'cscope.*'"
-rsync -avPr ${EXCLUDES} ${LOCAL_PATH} ${REMOTE_HOST}:${TARGET_PATH}
+rm -rf ${TARGET_PATH}
+mkdir -p ${TARGET_PATH}
+cp -r "$SOURCE_DIR" "$TARGET_PATH"
 
 done
 

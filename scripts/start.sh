@@ -2,17 +2,12 @@ PROJECT_DIR="${HOME}/TokenDroplet"
 
 for i in "$@"; do
 
-echo "start $i";
-if [ ! -e "${PROJECT_DIR}/config/ScanService/$i.json" ]; then
-    echo "${PROJECT_DIR}/config/ScanService/$i.json does not exist!"
+if [ ! -e "${PROJECT_DIR}/$i/ScanService" ]; then
+    echo "${PROJECT_DIR}/$i/ScanService not exist, ignore start $i scan service"
     continue
 fi
 
-if [ ! -e "${PROJECT_DIR}/$i/ScanService/config" ]; then
-    echo "${PROJECT_DIR}/$i/ScanService/config directory does not exist!"
-    continue
-fi
-
-cp -v ${PROJECT_DIR}/config/ScanService/$i.json ${PROJECT_DIR}/$i/ScanService/config/service.json && cd ${PROJECT_DIR}/$i/ScanService && nohup python main.py $i &
+echo "start ${PROJECT_DIR}/$i/ScanService";
+cd ${PROJECT_DIR}/$i/ScanService && nohup python main.py $i &
 
 done

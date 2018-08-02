@@ -6,39 +6,30 @@
 ```
 In this directory,
 1. For each scan token(ie. etp), there is a project sub-directory(ie. etp), and deploy service in this sub-directory.
-2. It has a `config` sub-directory which is used to backup config files for all services of each token.
-3. It has a `src` sub-directory which concludes the common source code to be deployed separately for each service.
+2. It has a `src` sub-directory which concludes the common source code to be deployed separately for each service.
 
 # deploy steps
 ```
 TOKENS="etp eth ethtoken"
-1. ./deploylocal.sh $TOKENS
-2. ./backup.sh $TOKENS
-3. ./start $TOKENS
+1. ./deploy.sh $TOKENS
+2. ./start.sh $TOKENS
 ```
 
 # scripts descripion
 
 ## clear database
 ```
-./cleardb.sh $TOKENS
+./cleardb.sh
+```
+
+## deploy service
+```
+./deploy.sh $TOKENS
 ```
 
 ## start service
 ```
 ./start.sh $TOKENS
-```
-
-## deploy service
-```
-./deploy.sh $TOKENS (use rsync)
-./deploylocal.sh $TOKENS
-```
-
-## backup and restore config file
-```
-./backup.sh $TOKENS
-./restore.sh $TOKENS
 ```
 
 ## examples of passing parameters
