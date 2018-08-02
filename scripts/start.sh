@@ -13,6 +13,6 @@ if [ ! -e "${PROJECT_DIR}/$i/ScanService/config" ]; then
     continue
 fi
 
-cp -v ${PROJECT_DIR}/config/ScanService/$i.json ${PROJECT_DIR}/$i/ScanService/config/service.json && cd ${PROJECT_DIR}/$i/ScanService && nohup python main.py &
+cp -v ${PROJECT_DIR}/config/ScanService/$i.json ${PROJECT_DIR}/$i/ScanService/config/service.json && cd ${PROJECT_DIR}/$i/ScanService && nohup python main.py $i &
 
 done

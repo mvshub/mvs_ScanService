@@ -14,10 +14,7 @@ In this directory,
 TOKENS="etp eth ethtoken"
 1. ./deploylocal.sh $TOKENS
 2. ./backup.sh $TOKENS
-3. edit config file in `config` sub-directory
-    modify "port" number to not conflict with each other
-    modify "enable" of scans services to enable only one needed scan service
-4. ./start $TOKENS
+3. ./start $TOKENS
 ```
 
 # scripts descripion

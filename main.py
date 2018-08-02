@@ -3,10 +3,16 @@ from utils.log.logger import Logger
 import json
 import signal
 import traceback
+import sys
 
-
-def main():
+def main(scan_token_name):
     settings = json.loads(open('config/service.json').read())
+    for i in settings['scans']['services']:
+        if i['coin'].lower() == scan_token_name:
+            i['enable'] = True
+            break
+    else:
+        assert(False)
     service = MainService(settings)
 
     def stop_signal(a, b):
@@ -25,4 +31,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    scan_token_name = sys.argv[1]
+    main(scan_token_name)
