@@ -32,11 +32,6 @@ class AbstractService(IService):
             )
         )
 
-    def registe_service(self, uri, f, name, methods=['GET']):
-        Logger.get().info('register service, {}, {}, {}'.format(uri, name, methods))
-        self.services.append(
-            {'uri': uri, 'f': f, 'name': name, 'methods': methods})
-
     def __init_app(self, app):
 
         for i, d in enumerate(self.settings['services']):
@@ -80,7 +75,7 @@ class AbstractService(IService):
             self.best_block_number = rpc.best_block_number()
         except Exception as e:
             pass
-        return True
+        return self.best_block_number
 
     def start_service(self):
         pass

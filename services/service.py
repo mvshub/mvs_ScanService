@@ -8,6 +8,7 @@ import sqlalchemy_utils
 from models import db
 from gevent.pywsgi import WSGIServer
 from gevent import monkey
+import time
 
 
 # need to patch sockets to make requests async
@@ -49,19 +50,17 @@ class MainService(IService):
         self.setup_db()
         self.rpcmanager.start()
 
+        # start scan service
         self.scan = ScanService(
             self.app, self.rpcmanager, self.settings['scans'])
         self.scan.start()
 
-        self.http = WSGIServer(
-            (self.settings['host'], self.settings['port']), self.app.wsgi_app)
-        Logger.get().info('server %s:%s' %
-                          (self.settings['host'], self.settings['port']))
-        self.http.serve_forever()
+        # do not exit the main thread
+        self.stopped = False
+        while not self.stopped:
+            time.sleep(1)
 
     def stop(self):
-        if hasattr(self, 'http'):
-            self.http.stop()
-
+        self.stopped = True
         if hasattr(self, 'scan'):
             self.scan.stop()
