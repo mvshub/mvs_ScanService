@@ -67,7 +67,7 @@ class Etp(Base):
         if len(assets) > 0:
             supply = int(assets[0]['maximum_supply'])
             if token in self.token_names:
-                supply = self.from_etp_wei(token, supply)
+                supply = self.from_wei(token, supply)
                 return supply
         return 0
 
@@ -117,7 +117,7 @@ class Etp(Base):
 
             if tx.get('token') is not None and tx.get('to') is not None:
                 token = tx['token']
-                tx['value'] = self.from_etp_wei(token, tx['value'])
+                tx['value'] = self.from_wei(token, tx['value'])
                 address = tx.get('to')
                 if self.is_to_address_valid(address):
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
@@ -186,22 +186,3 @@ class Etp(Base):
             if i['name'] == token:
                 return i['decimal']
         return 0
-
-    def to_etp_wei(self, token, amount):
-        dec = self.get_decimal(token)
-        exponent = MAX_ERC_2_ETP_DECIMAL - dec
-        if exponent < 0:
-            volume = int(amount * decimal.Decimal(10.0 ** (exponent)))
-        else:
-            volume = int(decimal.Decimal(amount))
-        return volume
-
-    def from_etp_wei(self, token, amount):
-        dec = self.get_decimal(token)
-        exponent = MAX_ERC_2_ETP_DECIMAL - dec
-        if exponent < 0:
-            exponent = -exponent
-            volume = int(amount * decimal.Decimal(10.0 ** (exponent)))
-        else:
-            volume = int(decimal.Decimal(amount))
-        return volume

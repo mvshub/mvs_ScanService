@@ -25,7 +25,12 @@
                 {
                     "name":"ERC.TAC",
                     "enable":true,
-                    "decimal": 14
+                    "decimal": 9
+                },
+                {
+                    "name":"ERC.ETH",
+                    "enable":true,
+                    "decimal": 9
                 }
             ]
         },

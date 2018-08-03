@@ -102,7 +102,7 @@ class Eth(Base):
                 tx['token'] = 'ETH'
 
             value = int(tx['value'], 16)
-            value = self.from_wei('ETH', value)
+            value = self.from_wei(None, value)
             tx['value'] = value
             tx['amount'] = value
 
