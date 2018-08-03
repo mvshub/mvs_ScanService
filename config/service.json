@@ -55,14 +55,14 @@
                 {
                     "name":"SMT",
                     "contract_address":"0x9faa766fcbcd3bdbab27681c7cca6e1a6016b7c5",
-                    "enable":false,
+                    "enable":true,
                     "decimal": 4
                 },
                 {
                     "name":"TAC",
                     "contract_address":"0x7cf4d8fdec9244e774272aac648d33e051fd83f4",
-                    "enable":false,
-                    "decimal": 4
+                    "enable":true,
+                    "decimal": 14
                 }
             ]
         }
@@ -94,7 +94,7 @@
                 "minconf":12,
                 "retry_interval":300,
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
-                "enable":false
+                "enable":true
             }
         ]
     }

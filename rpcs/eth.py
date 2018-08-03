@@ -42,10 +42,6 @@ class Eth(Base):
             raise RpcException('%s' % js['error']['message'])
         return js['result']
 
-    def get_balance(self, name, address):
-        res = self.make_request('eth_getBalance', [address])
-        return int(res, 16)
-
     def get_coins(self):
         coins = []
         supply = self.get_total_supply()
@@ -82,8 +78,6 @@ class Eth(Base):
             tx['index'] = i
             tx['blockNumber'] = int(tx['blockNumber'], 16)
             tx['time'] = int(block['timestamp'], 16)
-            tx['value'] = int(tx['value'], 16)
-            tx['amount'] = tx['value']
             tx['isBinder'] = False
             tx['type'] = self.name
             if tx['to'] is None:
@@ -106,6 +100,11 @@ class Eth(Base):
                 tx['swap_address'] = tx['to']
                 tx['to'] = None
                 tx['token'] = 'ETH'
+
+            value = int(tx['value'], 16)
+            value = self.from_wei('ETH', value)
+            tx['value'] = value
+            tx['amount'] = value
 
             block['txs'].append(tx)
 
@@ -160,5 +159,5 @@ class Eth(Base):
             return False
         return True
 
-    def decimals(self, token):
+    def get_decimal(self, token):
         return 18

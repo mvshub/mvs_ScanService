@@ -4,6 +4,7 @@ from utils.log.logger import Logger
 from utils.exception import RpcException, CriticalException
 import json
 import decimal
+from models.constants import MAX_ERC_2_ETP_DECIMAL
 from models.coin import Coin
 from models.constants import Status
 
@@ -46,10 +47,6 @@ class Etp(Base):
             pass
         return res.text
 
-    def get_balance(self, name, address):
-        res = self.make_request('getaddressetp', [address])
-        return res['result']['unspent']
-
     def get_coins(self):
         coins = []
         for x in self.tokens:
@@ -59,18 +56,18 @@ class Etp(Base):
                 coin.name = self.name
                 coin.token = x['name']
                 coin.total_supply = supply
-                coin.decimal = self.decimals(coin.token)
+                coin.decimal = self.get_decimal(coin.token)
                 coin.status = int(Status.Token_Normal)
                 coins.append(coin)
         return coins
 
-    def get_total_supply(self, token_name=None):
-        res = self.make_request('getasset', [token_name])
+    def get_total_supply(self, token=None):
+        res = self.make_request('getasset', [token])
         assets = res['result']
         if len(assets) > 0:
             supply = int(assets[0]['maximum_supply'])
-            if token_name in self.token_names:
-                supply = self.from_wei(token_name, supply)
+            if token in self.token_names:
+                supply = self.from_etp_wei(token, supply)
                 return supply
         return 0
 
@@ -119,15 +116,17 @@ class Etp(Base):
                     tx['to'] = address
 
             if tx.get('token') is not None and tx.get('to') is not None:
+                token = tx['token']
+                tx['value'] = self.from_etp_wei(token, tx['value'])
                 address = tx.get('to')
                 if self.is_to_address_valid(address):
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
-                        tx['token'], tx['value'], tx['hash'], tx['blockNumber'], address))
+                        token, tx['value'], tx['hash'], tx['blockNumber'], address))
                     continue
 
                 txs.append(tx)
                 Logger.get().info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
-                    tx['token'], tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
+                    token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
 
         res['txs'] = txs
         return res
@@ -182,8 +181,27 @@ class Etp(Base):
         res = self.make_request('getheight')
         return res['result']
 
-    def decimals(self, token):
+    def get_decimal(self, token):
         for i in self.tokens:
             if i['name'] == token:
                 return i['decimal']
         return 0
+
+    def to_etp_wei(self, token, amount):
+        dec = self.get_decimal(token)
+        exponent = MAX_ERC_2_ETP_DECIMAL - dec
+        if exponent < 0:
+            volume = int(amount * decimal.Decimal(10.0 ** (exponent)))
+        else:
+            volume = int(decimal.Decimal(amount))
+        return volume
+
+    def from_etp_wei(self, token, amount):
+        dec = self.get_decimal(token)
+        exponent = MAX_ERC_2_ETP_DECIMAL - dec
+        if exponent < 0:
+            exponent = -exponent
+            volume = int(amount * decimal.Decimal(10.0 ** (exponent)))
+        else:
+            volume = int(decimal.Decimal(amount))
+        return volume

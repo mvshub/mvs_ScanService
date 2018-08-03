@@ -7,9 +7,6 @@ class Base:
         self.settings = settings
         self.name = ''
 
-    def get_balance(self, name, address):
-        pass
-
     def is_swap(self, name, tx, addresses):
         pass
 
@@ -34,13 +31,13 @@ class Base:
     def stop(self):
         pass
 
-    def decimals(self, token):
+    def get_decimal(self, token):
         return 0
 
     def to_wei(self, token, amount):
-        dec = self.decimals(token)
+        dec = self.get_decimal(token)
         return long(amount * decimal.Decimal(10.0**dec))
 
     def from_wei(self, token, wei):
-        dec = self.decimals(token)
+        dec = self.get_decimal(token)
         return decimal.Decimal(wei) / decimal.Decimal(10.0**dec)

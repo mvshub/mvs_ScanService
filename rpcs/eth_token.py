@@ -39,17 +39,6 @@ class EthToken(Eth):
                 return x['contract_address']
         return None
 
-    def get_balance(self, name, address):
-        contract = self.get_contractaddress(name)
-        if contract is None:
-            return 0
-        if len(address) == 42:
-            address = address[2:]
-        data = '0x70a08231000000000000000000000000%s' % address
-        balance = self.make_request(
-            'eth_call', [{'to': contract, 'data': data}, 'latest'])
-        return int(balance, 16)
-
     def get_coins(self):
         coins = []
         for x in self.tokens:
@@ -59,7 +48,7 @@ class EthToken(Eth):
                 coin.name = self.name
                 coin.token = x['name']
                 coin.total_supply = self.from_wei(x['name'], supply)
-                coin.decimal = self.decimals(coin.token)
+                coin.decimal = self.get_decimal(coin.token)
                 coin.status = int(Status.Token_Normal)
                 coins.append(coin)
         return coins
@@ -90,7 +79,7 @@ class EthToken(Eth):
         strLen = int('0x' + symbol[126:130], 16)
         return str(binascii.unhexlify(symbol[130:194])[:strLen], "utf-8")
 
-    def decimals(self, name):
+    def get_decimal(self, name):
         for i in self.tokens:
             if i['name'] == name:
                 return int(i['decimal'])
@@ -151,14 +140,15 @@ class EthToken(Eth):
             if tx['to'] in self.contract_addresses:
                 if len(input_) != 138:
                     continue
-                value = int('0x' + input_[74:], 16)
                 to_addr = '0x' + input_[34:74]
                 if to_addr not in addresses:
                     continue
                 tx['swap_address'] = to_addr
+                tx['token'] = self.symbol(contract=tx['to'])
+                value = int('0x' + input_[74:], 16)
+                value = self.from_wei(tx['token'], value)
                 tx['value'] = value
                 tx['amount'] = value
-                tx['token'] = self.symbol(contract=tx['to'])
                 tx['to'] = None
 
             else:
@@ -170,7 +160,7 @@ class EthToken(Eth):
                     input_[138:202])[:strLen], "utf-8")
                 tx['isBinder'] = True
                 Logger.get().info('new binder found, from:%s, to:%s' %
-                            (tx['from'], tx['to']))
+                                  (tx['from'], tx['to']))
 
             block['txs'].append(tx)
 

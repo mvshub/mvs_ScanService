@@ -5,14 +5,17 @@ import signal
 import traceback
 import sys
 
+
 def main(scan_token_name):
     settings = json.loads(open('config/service.json').read())
     for i in settings['scans']['services']:
-        if i['coin'].lower() == scan_token_name:
+        if i['coin'] == scan_token_name:
             i['enable'] = True
             break
     else:
+        Logger.get().error("Unsupported token: {}".format(scan_token_name))
         assert(False)
+
     service = MainService(settings)
 
     def stop_signal(a, b):
