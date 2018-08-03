@@ -31,6 +31,11 @@
                     "name":"ERC.ETH",
                     "enable":true,
                     "decimal": 9
+                },
+                {
+                    "name":"ERC.DEV",
+                    "enable":true,
+                    "decimal": 9
                 }
             ]
         },
@@ -68,6 +73,12 @@
                     "contract_address":"0x7cf4d8fdec9244e774272aac648d33e051fd83f4",
                     "enable":true,
                     "decimal": 14
+                },
+                {
+                    "name":"DEV",
+                    "contract_address":"0xc8c7655b14bad9fd12d7205f5041e6f57f9ebaf0",
+                    "enable":true,
+                    "decimal": 10
                 }
             ]
         }
