@@ -81,8 +81,7 @@ class Etp(Base):
             input_addresses = [input_['address'] for input_ in trans[
                 'inputs'] if input_.get('address') is not None]
             input_addresses = list(set(input_addresses))
-            from_addr = input_addresses[0] if len(
-                input_addresses) == 1 else None
+            from_addr = input_addresses[0] if len(input_addresses) > 0 else ''
 
             tx = {}
             for j, output in enumerate(trans['outputs']):
