@@ -9,7 +9,7 @@ import sys
 def main(scan_token_name):
     settings = json.loads(open('config/service.json').read())
     for i in settings['scans']['services']:
-        if i['coin'] == scan_token_name:
+        if i['coin'].lower() == scan_token_name.lower():
             i['enable'] = True
             break
     else:

@@ -1,13 +1,22 @@
-PROJECT_DIR="${HOME}/TokenDroplet"
+#!/bin/bash
 
-for i in "$@"; do
+SCRIPT_DIR=$(dirname "$0")
+SCRIPT_PARENT_DIR=$(realpath "$SCRIPT_DIR/..")
+PROG="$SCRIPT_PARENT_DIR/main.py"
 
-if [ ! -e "${PROJECT_DIR}/$i/ScanService" ]; then
-    echo "${PROJECT_DIR}/$i/ScanService not exist, ignore start $i scan service"
-    continue
+if [ ! -e "$PROG" ]
+then
+    echo "$PROG does not exist"
+    exit 1
 fi
 
-echo "start ${PROJECT_DIR}/$i/ScanService";
-cd ${PROJECT_DIR}/$i/ScanService && nohup python main.py $i &
+echo "run $PROG"
 
+LOGFILE_DIR="$SCRIPT_PARENT_DIR/log"
+mkdir -p "$LOGFILE_DIR"
+
+for token_name in "$@"
+do
+    echo "start $token_name scan service";
+    nohup python3 "$PROG" "$token_name" &> "$LOGFILE_DIR/${token_name}_scan.log" &
 done

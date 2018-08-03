@@ -55,13 +55,25 @@ modify key path in config/service.json.
 #### Instructions
 
 Run:
+1. run manually
+start _one process_ each time with a _single_ token name parameter.
 ```bash
-python3 main.py
+# token name is a single parameter,
+# accept token name should exist in file config/service.json,
+# same as one of scans.services.coin fields value (ignore case)
+python3 main.py <token_name>
+examples:
+python3 main.py etp
+python3 main.py eth
+python3 main.py ethtoken
 ```
-
-Enable coin address in explorer:
-```
-http://127.0.0.1:8081/service/{coin_name}/address
+2. run batch
+cd `scripts`, and use the following ways to run `start.sh` to start _one or more processes_.
+```bash
+./start.sh etp
+./start.sh etp eth ethtoken
+echo "etp eth ethtoken" | xargs -n1 ./start.sh
+cat token_names.txt | xargs -n1 ./start.sh
 ```
 
 #### Requirements
