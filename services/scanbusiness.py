@@ -20,6 +20,7 @@ class ScanBusiness(IBusiness):
         IBusiness.__init__(self, service, rpc, setting)
         self.coin = setting['coin']
         self.scan_address = setting['scan_address']
+        self.scan_initial_height = setting['scan_initial_height']
         self.scan_height = 0
         self.swaps = {}
 
@@ -34,7 +35,7 @@ class ScanBusiness(IBusiness):
         if not s:
             s = Scan()
             s.coin = self.coin
-            s.height = 1
+            s.height = self.scan_initial_height
 
             db.session.add(s)
             db.session.commit()

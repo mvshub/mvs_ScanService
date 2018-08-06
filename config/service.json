@@ -94,6 +94,7 @@
                 "minconf":12,
                 "retry_interval":300,
                 "scan_address":"tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm",
+                "scan_initial_height":585990,
                 "enable":false
             },
             {
@@ -102,6 +103,7 @@
                 "minconf":12,
                 "retry_interval":300,
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
+                "scan_initial_height":1,
                 "enable":false
             },
             {
@@ -110,6 +112,7 @@
                 "minconf":12,
                 "retry_interval":300,
                 "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
+                "scan_initial_height":1,
                 "enable":false
             }
         ]
