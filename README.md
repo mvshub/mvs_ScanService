@@ -55,7 +55,7 @@ modify key path in config/service.json.
 #### Instructions
 
 Run:
-1. run manually
+1. run manually  
 start _one process_ each time with a _single_ token name parameter.
 ```bash
 # token name is a single parameter,
@@ -67,13 +67,16 @@ python3 main.py etp
 python3 main.py eth
 python3 main.py ethtoken
 ```
-2. run batch
+2. run batch  
 cd `scripts`, and use the following ways to run `start.sh` to start _one or more processes_.
+This script has function of watching the processes and restart them if it's not running.
 ```bash
 ./start.sh etp
 ./start.sh etp eth ethtoken
 echo "etp eth ethtoken" | xargs -n1 ./start.sh
 cat token_names.txt | xargs -n1 ./start.sh
+# use nohup if use remote server
+nohup ./start.sh etp eth ethtoken &> scan_watcher.log &
 ```
 
 #### Requirements
