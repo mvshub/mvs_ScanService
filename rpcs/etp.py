@@ -109,10 +109,11 @@ class Etp(Base):
                     tx['from'] = from_addr
 
                 elif output['attachment']['type'] == 'message':
-                    address = output['attachment']['content'].lower()
-                    if not address.startswith('0x'):
-                        address = "0x{}".format(address)
-                    tx['to'] = address
+                    address = output['attachment']['content']
+                    if address and len(address) > 0:
+                        if not address.startswith('0x'):
+                            address = "0x{}".format(address)
+                        tx['to'] = address.lower()
 
             if tx.get('token') is not None and tx.get('to') is not None:
                 token = tx['token']
