@@ -8,6 +8,7 @@ FETCH_MAX_ROW = 1000
 
 MAX_ERC_2_ETP_DECIMAL = 9
 
+SWAP_TOKEN_PREFIX = 'ERCTEST.'
 
 class Status(IntEnum):
     Swap_New = 1
