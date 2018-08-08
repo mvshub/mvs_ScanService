@@ -92,7 +92,7 @@ class Etp(Base):
                     if to_addr not in addresses:
                         continue
 
-                    if from_addr == to_addr:
+                    if to_addr in input_addresses:
                         continue
 
                     tx['type'] = 'ETP'
