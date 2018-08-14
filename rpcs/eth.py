@@ -151,6 +151,8 @@ class Eth(Base):
     def is_address_valid(self, address):
         if len(address) != 42:
             return False
+        if address[:2] != '0x':
+            return False
         try:
             int(address, 16)
         except Exception as e:
