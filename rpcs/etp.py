@@ -118,13 +118,12 @@ class Etp(Base):
 
                             if rst['type'] == 'ETH':
                                 address = rst['address']
-                                if address.startswith('0x')
+                                if not address.startswith('0x'):
                                     address = "0x{}".format(address)
                                 tx['to'] = address.lower()     
                                                     
-                        Exception as e:
-                            Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to load json: {}".format(
-                                token, tx['value'], tx['hash'], tx['blockNumber'], content))
+                        except Exception as e:
+                            Logger.get().error("height: {}, invalid to load json: {}".format(height, content))
                             continue
 
 
