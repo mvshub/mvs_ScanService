@@ -109,11 +109,24 @@ class Etp(Base):
                     tx['from'] = from_addr
 
                 elif output['attachment']['type'] == 'message':
-                    address = output['attachment']['content']
-                    if address and len(address) > 0:
-                        if not address.startswith('0x'):
-                            address = "0x{}".format(address)
-                        tx['to'] = address.lower()
+                    content = output['attachment']['content']
+                    if content and len(content) > 0:
+                        try:
+                            rst = json.load(content)
+                            if rst == None or 'type' not in rst or 'address' not in rst:
+                                continue
+
+                            if rst['type'] == 'ETH':
+                                address = rst['address']
+                                if address.startswith('0x')
+                                    address = "0x{}".format(address)
+                                tx['to'] = address.lower()     
+                                                    
+                        Exception as e:
+                            Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to load json: {}".format(
+                                token, tx['value'], tx['hash'], tx['blockNumber'], content))
+                            continue
+
 
             if tx.get('token') is not None and tx.get('to') is not None:
                 token = tx['token']
