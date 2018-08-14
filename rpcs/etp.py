@@ -112,7 +112,7 @@ class Etp(Base):
                     content = output['attachment']['content']
                     if content and len(content) > 0:
                         try:
-                            rst = json.load(content)
+                            rst = json.loads(content)
                             if rst == None or 'type' not in rst or 'address' not in rst:
                                 continue
 
@@ -120,8 +120,7 @@ class Etp(Base):
                                 address = rst['address']
                                 if not address.startswith('0x'):
                                     address = "0x{}".format(address)
-                                tx['to'] = address.lower()     
-                                                    
+                                tx['to'] = address.lower()
                         except Exception as e:
                             Logger.get().error("height: {}, invalid to load json: {}".format(height, content))
                             continue
