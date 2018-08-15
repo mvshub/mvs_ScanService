@@ -156,6 +156,7 @@ class Etp(Base):
                     fee = 0 if not tx.get('fee') else tx['fee']
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid fee: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], fee))
+                    tx['fee'] = fee
                     tx['message'] = 'invalid fee:' + str(fee)
                     self.commit_ban(tx)
                     continue
@@ -180,6 +181,7 @@ class Etp(Base):
         item.from_address = tx_ban['from']
         item.token = tx_ban['token']
         item.amount = tx_ban['amount']
+        item.fee = tx_ban['fee']
         item.block_height = tx_ban['height']
         item.tx_time = tx_ban['time']
         item.tx_hash = tx_ban['hash']
