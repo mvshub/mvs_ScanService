@@ -103,6 +103,7 @@ class Eth(Base):
             value = self.from_wei(None, value)
             tx['value'] = value
             tx['amount'] = value
+            tx['fee'] = 0
 
             block['txs'].append(tx)
 

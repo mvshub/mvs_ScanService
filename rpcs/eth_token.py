@@ -136,6 +136,7 @@ class EthToken(Eth):
             tx['time'] = int(block['timestamp'], 16)
             tx['isBinder'] = False
             tx['type'] = self.name
+            tx['fee'] = 0
             input_ = tx['input']
             if tx['to'] in self.contract_addresses:
                 if len(input_) != 138:

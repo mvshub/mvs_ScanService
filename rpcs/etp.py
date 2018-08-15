@@ -158,7 +158,7 @@ class Etp(Base):
                     tx['message'] = 'invalid fee:' + str(fee)
                     tx['ban'] = True
 
-
+                tx['fee'] = fee
                 txs.append(tx)
                 Logger.get().info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
                     token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))

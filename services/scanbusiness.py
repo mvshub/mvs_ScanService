@@ -57,6 +57,7 @@ class ScanBusiness(IBusiness):
         item.from_address = swap['from']
         item.token = swap['token']
         item.amount = swap['amount']
+        item.fee = swap['fee']
         item.block_height = swap['height']
         item.tx_time = swap['time']
         item.tx_hash = swap['hash']
