@@ -161,6 +161,10 @@ class ScanBusiness(IBusiness):
 
         self.commit_swaps(swaps)
 
+
+        for ban in bans:
+            ban['amount'] = ban['value']
+            ban['height'] = int(ban['blockNumber'])
         self.commit_bans(bans)
 
         for bd in binders:
