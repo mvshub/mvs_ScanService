@@ -9,7 +9,6 @@ from models.coin import Coin
 from models.constants import Status
 from models import constants
 import time
-from models.swap_ban import Swap_ban
 
 
 class Etp(Base):
@@ -141,6 +140,7 @@ class Etp(Base):
                     
                     tx['fee'] = output["value"]
 
+            fee = 0 if not tx.get('fee') else tx['fee']
             if tx.get('token') is not None and tx.get('to') is not None:
                 token = tx['token']
                 tx['value'] = self.from_wei(token, tx['value'])
@@ -149,18 +149,15 @@ class Etp(Base):
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], address))
                     tx['message'] = 'invalid to address:'+ address
-                    self.commit_ban(tx)
-                    continue
-
-                if 'fee' not in tx or tx['fee'] < self.minfee:
-                    fee = 0 if not tx.get('fee') else tx['fee']
+                    tx['ban'] = True
+                    tx['fee'] = fee
+                elif 'fee' not in tx or tx['fee'] < self.minfee:
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid fee: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], fee))
                     tx['fee'] = fee
                     tx['message'] = 'invalid fee:' + str(fee)
-                    self.commit_ban(tx)
-                    continue
-                
+                    tx['ban'] = True
+
 
                 txs.append(tx)
                 Logger.get().info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
@@ -170,28 +167,7 @@ class Etp(Base):
         res['txs'] = txs
         return res
 
-    def commit_ban(self, tx_ban):
-        item = db.session.query(Swap_ban).filter_by(tx_hash=tx_ban['hash']).first()
-        if item:
-            return
-        item = Swap_ban()
-        item.coin = 'ETP'
-        item.swap_address = tx_ban['swap_address']
-        item.to_address = tx_ban['to']
-        item.from_address = tx_ban['from']
-        item.token = tx_ban['token']
-        item.amount = tx_ban['amount']
-        item.fee = tx_ban['fee']
-        item.block_height = tx_ban['height']
-        item.tx_time = tx_ban['time']
-        item.tx_hash = tx_ban['hash']
-        item.tx_index = tx_ban['index']
-        item.output_index = tx_ban.get('output_index')
-        item.create_time = int(time.time() * 1000)
-        item.message = tx_ban['message']
-        
-        db.session.add(item)
-        db.session.commit()
+
 
 
 

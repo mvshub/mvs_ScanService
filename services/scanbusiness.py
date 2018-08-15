@@ -12,6 +12,7 @@ import time
 from utils.log.logger import Logger
 from decimal import Decimal
 from functools import partial
+from models.swap_ban import Swap_ban
 
 
 class ScanBusiness(IBusiness):
@@ -100,6 +101,35 @@ class ScanBusiness(IBusiness):
             self.commit_binder(bd)
 
     @timeit
+    def commit_ban(self, tx_ban):
+        item = db.session.query(Swap_ban).filter_by(tx_hash=tx_ban['hash']).first()
+        if item:
+            return
+        item = Swap_ban()
+        item.coin = 'ETP'
+        item.swap_address = tx_ban['swap_address']
+        item.to_address = tx_ban['to']
+        item.from_address = tx_ban['from']
+        item.token = tx_ban['token']
+        item.amount = tx_ban['amount']
+        item.fee = tx_ban['fee']
+        item.block_height = tx_ban['height']
+        item.tx_time = tx_ban['time']
+        item.tx_hash = tx_ban['hash']
+        item.tx_index = tx_ban['index']
+        item.output_index = tx_ban.get('output_index')
+        item.create_time = int(time.time() * 1000)
+        item.message = tx_ban['message']
+        
+        db.session.add(item)
+        db.session.commit()
+
+    @timeit
+    def commit_bans(self, bans):
+        for bd in bans:
+            self.commit_ban(bd)
+
+    @timeit
     def process_scan(self):
         rpc = self.rpc
         try:
@@ -112,11 +142,15 @@ class ScanBusiness(IBusiness):
         block = rpc.get_block_by_height(self.scan_height, self.scan_address)
         swaps = []
         binders = []
+        bans = []
         for tx in block['txs']:
             if tx.get('isBinder', False) == True:
                 binders.append(tx)
                 Logger.get().info(' binder address, from:%s, to:%s' %
                                   (tx['from'], tx['to']))
+            elif tx.get('ban', False) == True:
+                bans.append(tx)
+                Logger.get().info('new bans found: %s' % tx)
             elif rpc.is_swap(tx, self.scan_address):
                 swaps.append(tx)
                 Logger.get().info('new swap found: %s' % tx)
@@ -126,6 +160,8 @@ class ScanBusiness(IBusiness):
             swap['height'] = int(swap['blockNumber'])
 
         self.commit_swaps(swaps)
+
+        self.commit_bans(bans)
 
         for bd in binders:
             bd['height'] = int(bd['blockNumber'])
