@@ -4,9 +4,12 @@ from utils.log.logger import Logger
 from utils.exception import RpcException, CriticalException
 import json
 import decimal
+from models import db
 from models.coin import Coin
 from models.constants import Status
 from models import constants
+import time
+from models.swap_ban import Swap_ban
 
 
 class Etp(Base):
@@ -20,6 +23,8 @@ class Etp(Base):
         self.token_names = [self.get_erc_symbol(x['name']) for x in self.tokens]
         Logger.get().info("init type {}, tokens: {}".format(
             self.name, self.token_names))
+        self.developer = ("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh","tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms")
+        self.minfee = 10**8
 
     def start(self):
         self.best_block_number()
@@ -124,7 +129,17 @@ class Etp(Base):
                         except Exception as e:
                             Logger.get().error("height: {}, invalid to load json: {}".format(height, content))
                             continue
+                elif output['attachment']['type'] == 'etp':
+                    to_addr = '' if output.get(
+                        'address') is None else output['address']
 
+                    if to_addr in input_addresses:
+                        continue
+
+                    if to_addr not in self.developer:
+                        continue
+                    
+                    tx['fee'] = output["value"]
 
             if tx.get('token') is not None and tx.get('to') is not None:
                 token = tx['token']
@@ -133,14 +148,50 @@ class Etp(Base):
                 if self.is_to_address_valid(address):
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], address))
+                    tx['message'] = 'invalid to address:'+ address
+                    self.commit_ban(tx)
                     continue
+
+                if 'fee' not in tx or tx['fee'] < self.minfee:
+                    fee = 0 if not tx.get('fee') else tx['fee']
+                    Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid fee: {}".format(
+                        token, tx['value'], tx['hash'], tx['blockNumber'], fee))
+                    tx['message'] = 'invalid fee:' + str(fee)
+                    self.commit_ban(tx)
+                    continue
+                
 
                 txs.append(tx)
                 Logger.get().info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
                     token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
 
+
         res['txs'] = txs
         return res
+
+    def commit_ban(self, tx_ban):
+        item = db.session.query(Swap_ban).filter_by(tx_hash=tx_ban['hash']).first()
+        if item:
+            return
+        item = Swap_ban()
+        item.coin = 'ETP'
+        item.swap_address = tx_ban['swap_address']
+        item.to_address = tx_ban['to']
+        item.from_address = tx_ban['from']
+        item.token = tx_ban['token']
+        item.amount = tx_ban['amount']
+        item.block_height = tx_ban['height']
+        item.tx_time = tx_ban['time']
+        item.tx_hash = tx_ban['hash']
+        item.tx_index = tx_ban['index']
+        item.output_index = tx_ban.get('output_index')
+        item.create_time = int(time.time() * 1000)
+        item.message = tx_ban['message']
+        
+        db.session.add(item)
+        db.session.commit()
+
+
 
     def is_to_address_valid(self, address):
         return address is None or len(address) < 42 or not self.is_hex(address[2:])
