@@ -19,10 +19,12 @@ class Etp(Base):
         Base.__init__(self, settings)
         self.name = 'ETP'
         self.tokens = settings['tokens']
-        self.token_names = [self.get_erc_symbol(x['name']) for x in self.tokens]
+        self.token_names = [self.get_erc_symbol(
+            x['name']) for x in self.tokens]
         Logger.get().info("init type {}, tokens: {}".format(
             self.name, self.token_names))
-        self.developer = ("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh","tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms")
+        self.developer = ("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
+                          "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms")
         self.minfee = 10**8
 
     def start(self):
@@ -137,24 +139,22 @@ class Etp(Base):
 
                     if to_addr not in self.developer:
                         continue
-                    
+
                     tx['fee'] = output["value"]
 
-            fee = 0 if not tx.get('fee') else tx['fee']
             if tx.get('token') is not None and tx.get('to') is not None:
                 token = tx['token']
                 tx['value'] = self.from_wei(token, tx['value'])
                 address = tx.get('to')
-                if self.is_to_address_valid(address):
+                fee = 0 if not tx.get('fee') else tx['fee']
+                if self.is_to_address_invalid(address):
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], address))
-                    tx['message'] = 'invalid to address:'+ address
+                    tx['message'] = 'invalid to address:' + address
                     tx['ban'] = True
-                    tx['fee'] = fee
-                elif 'fee' not in tx or tx['fee'] < self.minfee:
+                elif fee < self.minfee:
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid fee: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], fee))
-                    tx['fee'] = fee
                     tx['message'] = 'invalid fee:' + str(fee)
                     tx['ban'] = True
 
@@ -163,15 +163,10 @@ class Etp(Base):
                 Logger.get().info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
                     token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
 
-
         res['txs'] = txs
         return res
 
-
-
-
-
-    def is_to_address_valid(self, address):
+    def is_to_address_invalid(self, address):
         return address is None or len(address) < 42 or not self.is_hex(address[2:])
 
     def is_address_valid(self, address):
@@ -195,7 +190,7 @@ class Etp(Base):
         if tx['token'] is None or tx['token'] not in self.token_names:
             return False
 
-        if self.is_to_address_valid(tx['to']):
+        if self.is_to_address_invalid(tx['to']):
             return False
 
         if set(tx['input_addresses']).intersection(set(addresses)):
