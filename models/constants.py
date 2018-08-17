@@ -8,7 +8,7 @@ FETCH_MAX_ROW = 1000
 
 MAX_ERC_2_ETP_DECIMAL = 9
 
-SWAP_TOKEN_PREFIX = 'ERCT1.'
+SWAP_TOKEN_PREFIX = 'ERCT2.'
 
 class Status(IntEnum):
     Swap_New = 1
