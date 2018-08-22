@@ -45,8 +45,10 @@ def main():
                         token_name, fail_count)
                     body = "{} scan service stopped ({}) and try restart at {}".format(
                         token_name, fail_count, time.ctime())
-                    ms = mailsend.MailSending()
-                    ms.send_mail("scan-service@watchdog.host", subject, body)
+                    print("{}\n{}".format(subject, body))
+                    # NOTICE: call send_mail after config and testing
+                    #ms = mailsend.MailSending()
+                    #ms.send_mail("scan-service@watchdog.host", subject, body)
 
                 fail_count_map[token_name] = fail_count + 1
 
