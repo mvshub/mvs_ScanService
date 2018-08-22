@@ -3,6 +3,7 @@
 import sys
 import os
 import time
+import mailsend
 
 def main():
     script_dir = os.path.split(os.path.realpath(__file__))[0]
@@ -21,6 +22,8 @@ def main():
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
+    fail_count_map = {}
+
     while True:
         print("------------- {} ---------------".format(time.ctime()))
         for token_name in sys.argv[1:]:
@@ -30,14 +33,28 @@ def main():
             found_result = os.popen("ps -ef | grep -v grep | grep '{}'".format(cmd)).read()
 
             if found_result == '':
-                print("no, start {} scan service".format(token_name))
+                fail_count = fail_count_map[token_name] if token_name in fail_count_map else 0
+                print("no, start {} scan service ({})".format(token_name, fail_count))
 
                 log_file = "{}/{}_scan.log".format(log_dir, token_name)
                 os.system("nohup {} > {} 2>&1 &".format(cmd, log_file))
 
+                # sending mail when restart process
+                if fail_count == 1 or fail_count == 2:
+                    subject = "MVS {} Scan Service Restart Warning ({})".format(
+                        token_name, fail_count)
+                    body = "{} scan service stopped ({}) and try restart at {}".format(
+                        token_name, fail_count, time.ctime())
+                    ms = mailsend.MailSending()
+                    ms.send_mail("scan-service@watchdog.host", subject, body)
+
+                fail_count_map[token_name] = fail_count + 1
+
                 print("sleep 2 seconds after start {}\n".format(token_name))
                 time.sleep(2)
             else:
+                # re-count from 1, 0 stands for initial starting
+                fail_count_map[token_name] = 1
                 print("yes, {} scan service is already started".format(token_name))
 
         print("sleep 60 seconds for next loop\n-----------\n")
