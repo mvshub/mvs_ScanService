@@ -240,7 +240,7 @@ class ScanBusiness(IBusiness):
     @timeit
     def process_immature(self):
         rpc = self.rpc
-        results = db.query(Immature).filter(and_(
+        results = db.session.query(Immature).filter(and_(
             Immature.coin == self.coin, Immature.status != int(Status.Tx_Unchecked))).all()
 
         if not results:
@@ -264,11 +264,10 @@ class ScanBusiness(IBusiness):
                 db.session.add(result)
                 db.session.commit()
             except Exception as e:
-                Logger.get().info('exception occured while process immature, coin=%s, tx_hash=%s'
-                % (result.coin ,result.tx_hash))
+                Logger.get().info('exception occured while process immature, coin=%s, tx_hash=%s' % (result.coin ,result.tx_hash))
                 continue
 
-    return True
+        return True
 
     def start(self):
         IBusiness.start(self)

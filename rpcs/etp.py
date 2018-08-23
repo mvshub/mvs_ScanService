@@ -83,7 +83,8 @@ class Etp(Base):
         res = self.make_request('getblock', [height])
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
-        block = res['result']['block']
+        block = res['result']['hash']
+        nonce = res['result']['nonce']
 
         txs = []
         for i, trans in enumerate(transactions):
@@ -104,7 +105,7 @@ class Etp(Base):
                     if to_addr in input_addresses:
                         continue
 
-                    tx['nonce'] = 0
+                    tx['nonce'] = nonce
                     tx['blockhash'] = block
                     tx['type'] = 'ETP'
                     tx['blockNumber'] = height
@@ -177,7 +178,7 @@ class Etp(Base):
             raise RpcException('bad request code,%s' % res.status_code)
         try:
             js = json.loads(res.text)
-            if ( js['hash'] = tx['hash'] and js['height'] = tx['blockNumber'] and
+            if ( js['hash'] == tx['hash'] and js['height'] == tx['blockNumber'] and
             js['block'] == tx['blockhash']):
                 return Status.Tx_Checked
             else:
