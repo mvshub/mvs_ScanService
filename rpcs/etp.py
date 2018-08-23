@@ -27,6 +27,8 @@ class Etp(Base):
                           "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms")
         self.minfee = 10**8
 
+        self.tx_verify_uri = settings['tx_verify_uri']
+
     def start(self):
         self.best_block_number()
         return True
@@ -81,6 +83,7 @@ class Etp(Base):
         res = self.make_request('getblock', [height])
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
+        block = res['result']['block']
 
         txs = []
         for i, trans in enumerate(transactions):
@@ -101,6 +104,8 @@ class Etp(Base):
                     if to_addr in input_addresses:
                         continue
 
+                    tx['nonce'] = 0
+                    tx['blockhash'] = block
                     tx['type'] = 'ETP'
                     tx['blockNumber'] = height
                     tx['index'] = i
@@ -165,6 +170,27 @@ class Etp(Base):
 
         res['txs'] = txs
         return res
+
+    def verify_tx(self, tx):
+        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=5)
+        if res.status_code != 200:
+            raise RpcException('bad request code,%s' % res.status_code)
+        try:
+            js = json.loads(res.text)
+            if ( js['hash'] = tx['hash'] and js['height'] = tx['blockNumber'] and
+            js['block'] == tx['blockhash']):
+                return Status.Tx_Checked
+            else:
+                tx['ban'] = True
+                tx['message'] = ('Check Tx failed, defalut tx, cur = [%s], verify_tx = [%s]' %
+                (tx, js) )
+                return Status.Tx_Ban
+
+        except Exception as e:
+            Logger.get().error(
+                'bad response content, failed to parse,%s' % res.text)
+
+        return Status.Tx_Unchecked
 
     def is_to_address_invalid(self, address):
         return address is None or len(address) < 42 or not self.is_hex(address[2:])

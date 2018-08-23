@@ -11,7 +11,7 @@ class Swap(db.Model):
     to_address = db.Column(db.String(128))
     amount = db.Column(db.Numeric(64, 18), nullable=False)
     fee = db.Column(db.Numeric(64, 18), nullable=False)
-    tx_hash = db.Column(db.String(256))
+    tx_hash = db.Column(db.String(256), unique = True)
     tx_index = db.Column(db.Integer)
     output_index = db.Column(db.Integer)
     block_height = db.Column(db.Integer)

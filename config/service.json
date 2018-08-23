@@ -11,6 +11,7 @@
             "decimal": 8,
             "type": "rpcs.etp.Etp",
             "uri": "http://127.0.0.1:8820/rpc/v3",
+            "tx_verfy_uri":"https://explorer.mvs.org/api/tx/",
             "tokens": [
                 {
                     "name":"ETH",
@@ -31,7 +32,8 @@
             "decimal": 18,
             "type": "rpcs.eth.Eth",
             "host":"10.10.10.175",
-            "port":8545
+            "port":8545,
+            "tx_verify_uri":"https://www.etherchain.org/api/tx/"
         },
         {
             "id":3,
@@ -40,6 +42,7 @@
             "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
             "host":"10.10.10.175",
             "port":8545,
+            "tx_verfy_uri":"https://www.etherchain.org/api/tx/",
             "tokens": [
                 {
                     "name":"EDU",

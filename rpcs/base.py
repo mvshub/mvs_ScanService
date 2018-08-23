@@ -41,3 +41,6 @@ class Base:
     def from_wei(self, token, wei):
         dec = self.get_decimal(token)
         return decimal.Decimal(wei) / decimal.Decimal(10.0**dec)
+
+    def verify_tx(self, tx):
+        pass

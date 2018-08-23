@@ -22,6 +22,10 @@ class Status(IntEnum):
     Token_Normal = 0
     Token_Issue = 1
 
+    Tx_Unchecked = 0
+    Tx_Checked = 1
+    Tx_Ban = 2
+
 
 class Error(IntEnum):
     Success = 0

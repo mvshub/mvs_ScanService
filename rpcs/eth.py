@@ -19,6 +19,8 @@ class Eth(Base):
         if 'decimal' in settings:
             self.decimal = settings['decimal']
 
+        self.tx_verify_uri = settings['tx_verify_uri']
+
     def start(self):
         self.best_block_number()
         return True
@@ -108,6 +110,27 @@ class Eth(Base):
             block['txs'].append(tx)
 
         return block
+
+    def verify_tx(self, tx):
+        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=5)
+        if res.status_code != 200:
+            raise RpcException('bad request code,%s' % res.status_code)
+        try:
+            js = json.loads(res.text)
+            if ( js['hash'] == tx['hash'] and js['blockNumber'] == tx['blockNumber'] and
+            js['blockhash'] == tx['blockhash'] and js['nonce'] == tx['nonce'] ):
+                return Status.Tx_Checked
+            else:
+                tx['ban'] = True
+                tx['message'] = ('Check Tx failed, defalut tx, cur = [%s], verify_tx = [%s]' %
+                (tx, js) )
+                return Status.Tx_Ban
+
+        except Exception as e:
+            Logger.get().error(
+                'bad response content, failed to parse,%s' % res.text)
+
+        return Status.Tx_Unchecked
 
     def is_swap(self, tx, addresses):
         if 'type' not in tx or tx['type'] != self.name:
