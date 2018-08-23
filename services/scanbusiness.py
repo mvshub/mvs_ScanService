@@ -172,8 +172,8 @@ class ScanBusiness(IBusiness):
             bd['height'] = int(bd['blockNumber'])
         self.commit_binders(binders)
 
-        Logger.get().info("> scan block {} : {} txs, {} swaps, {} binders".format(
-            self.scan_height, len(block['txs']), len(swaps), len(binders)))
+        Logger.get().info("> scan {} block {} : {} txs, {} swaps, {} binders".format(
+            self.coin, self.scan_height, len(block['txs']), len(swaps), len(binders)))
 
         if swaps or self.scan_height % 50 == 0:
             s = db.session.query(Scan).filter_by(coin=self.coin).first()
