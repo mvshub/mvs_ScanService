@@ -117,8 +117,12 @@ class Eth(Base):
             raise RpcException('bad request code,%s' % res.status_code)
         try:
             js = json.loads(res.text)[0]
-            if ( js['hash'] == tx['hash'] and js['blockNumber'] == tx['blockNumber'] and
-            js['blockhash'] == tx['blockhash'] and js['nonce'] == tx['nonce'] ):
+            def LSTRIP( x, prefix):
+                if x.startswith(prefix): 
+                    return x[len(prefix):]
+                return x
+            if ( LSTRIP(js['hash'], '0x') == LSTRIP( tx['hash'], '0x') and int(js['blocknumber']) == int(tx['blockNumber']) and
+            LSTRIP( js['blockhash'], '0x') == LSTRIP( tx['blockHash'], '0x') and int(js['nonce']) == int(tx['nonce'],16) ):
                 return Status.Tx_Checked
             else:
                 tx['ban'] = True
