@@ -116,7 +116,7 @@ class Eth(Base):
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
-            js = json.loads(res.text)
+            js = json.loads(res.text)[0]
             if ( js['hash'] == tx['hash'] and js['blockNumber'] == tx['blockNumber'] and
             js['blockhash'] == tx['blockhash'] and js['nonce'] == tx['nonce'] ):
                 return Status.Tx_Checked

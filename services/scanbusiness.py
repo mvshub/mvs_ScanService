@@ -145,6 +145,7 @@ class ScanBusiness(IBusiness):
         item.tx_hash = tx_immature['hash']
         item.nonce = tx_immature['nonce']
         item.status = tx_immature['status']
+        tx_immature['value']= str(tx_immature['value'])
         item.tx_result = json.dumps(tx_immature)
 
         db.session.add(item)
@@ -193,7 +194,7 @@ class ScanBusiness(IBusiness):
                     Logger.get().info('new bans found: %s' % tx)
 
         for swap in swaps:
-            swap['amount'] = swap['value']
+            swap['amount'] = Decimal(swap['value'])
             swap['height'] = int(swap['blockNumber'])
 
         self.commit_swaps(swaps)

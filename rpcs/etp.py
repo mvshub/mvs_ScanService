@@ -84,7 +84,7 @@ class Etp(Base):
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
         block = res['result']['hash']
-        nonce = res['result']['nonce']
+        nonce = 0
 
         txs = []
         for i, trans in enumerate(transactions):
@@ -177,7 +177,7 @@ class Etp(Base):
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
-            js = json.loads(res.text)
+            js = json.loads(res.text)['result']
             if ( js['hash'] == tx['hash'] and js['height'] == tx['blockNumber'] and
             js['block'] == tx['blockhash']):
                 return Status.Tx_Checked
