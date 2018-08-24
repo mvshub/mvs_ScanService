@@ -79,6 +79,7 @@ class Eth(Base):
         for i, tx in enumerate(block['transactions']):
             tx['index'] = i
             tx['blockNumber'] = int(tx['blockNumber'], 16)
+            tx['blockhash'] = tx['blockHash']
             tx['time'] = int(block['timestamp'], 16)
             tx['isBinder'] = False
             tx['type'] = self.name

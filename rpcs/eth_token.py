@@ -134,6 +134,7 @@ class EthToken(Eth):
             tx['index'] = i
             tx['blockNumber'] = int(tx['blockNumber'], 16)
             tx['time'] = int(block['timestamp'], 16)
+            tx['blockhash'] = tx['blockHash']
             tx['isBinder'] = False
             tx['type'] = self.name
             tx['fee'] = 0
