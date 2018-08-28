@@ -13,11 +13,13 @@
             "uri": "http://127.0.0.1:8820/rpc/v3",
             "tx_verify_uri":"https://explorer-testnet.mvs.org/api/tx/",
             "tokens": [
+/*
                 {
                     "name":"ETH",
                     "enable":true,
                     "decimal": 9
                 },
+*/
                 {
                     "name":"EDU",
                     "enable":true,
@@ -25,6 +27,7 @@
                 }
             ]
         },
+/*
         {
             "id": 2,
             "name": "ETH",
@@ -35,6 +38,7 @@
             "port":8545,
             "tx_verify_uri":"https://www.etherchain.org/api/tx/"
         },
+*/
         {
             "id":3,
             "name":"ETHToken",
@@ -67,6 +71,7 @@
                 "scan_initial_height":612821,
                 "enable":false
             },
+/*
             {
                 "rpc":2,
                 "coin":"ETH",
@@ -76,6 +81,7 @@
                 "scan_initial_height":6161426,
                 "enable":false
             },
+*/
             {
                 "rpc":3,
                 "coin":"ETHToken",
