@@ -13,13 +13,6 @@
             "uri": "http://127.0.0.1:8820/rpc/v3",
             "tx_verify_uri":"https://explorer-testnet.mvs.org/api/tx/",
             "tokens": [
-/*
-                {
-                    "name":"ETH",
-                    "enable":true,
-                    "decimal": 9
-                },
-*/
                 {
                     "name":"EDU",
                     "enable":true,
@@ -27,20 +20,8 @@
                 }
             ]
         },
-/*
         {
-            "id": 2,
-            "name": "ETH",
-            "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
-            "decimal": 18,
-            "type": "rpcs.eth.Eth",
-            "host":"13.57.140.140",
-            "port":8545,
-            "tx_verify_uri":"https://www.etherchain.org/api/tx/"
-        },
-*/
-        {
-            "id":3,
+            "id":2,
             "name":"ETHToken",
             "type":"rpcs.eth_token.EthToken",
             "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
@@ -71,19 +52,8 @@
                 "scan_initial_height":612821,
                 "enable":false
             },
-/*
             {
                 "rpc":2,
-                "coin":"ETH",
-                "minconf":12,
-                "retry_interval":300,
-                "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
-                "scan_initial_height":6161426,
-                "enable":false
-            },
-*/
-            {
-                "rpc":3,
                 "coin":"ETHToken",
                 "minconf":12,
                 "retry_interval":300,
