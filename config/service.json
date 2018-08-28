@@ -8,7 +8,6 @@
         {
             "id": 1,
             "name": "ETP",
-            "decimal": 8,
             "type": "rpcs.etp.Etp",
             "uri": "http://127.0.0.1:8820/rpc/v3",
             "tx_verify_uri":"https://explorer-testnet.mvs.org/api/tx/",
@@ -47,7 +46,6 @@
                 "rpc":1,
                 "coin":"ETP",
                 "minconf":12,
-                "retry_interval":300,
                 "scan_address":"tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm",
                 "scan_initial_height":612821,
                 "enable":false
@@ -56,7 +54,6 @@
                 "rpc":2,
                 "coin":"ETHToken",
                 "minconf":12,
-                "retry_interval":300,
                 "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
                 "scan_initial_height":6161426,
                 "enable":false

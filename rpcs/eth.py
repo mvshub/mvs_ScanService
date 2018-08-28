@@ -16,9 +16,6 @@ class Eth(Base):
         self.name = 'ETH' if settings.get('name') is None else settings['name']
         self.contract_mapaddress = settings['contract_mapaddress'].lower()
 
-        if 'decimal' in settings:
-            self.decimal = settings['decimal']
-
         self.tx_verify_uri = settings['tx_verify_uri']
 
     def start(self):
