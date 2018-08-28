@@ -1,7 +1,7 @@
-# wallet_deposit
+# Scan Service of CrossChain
 
 #### Description
-Cross chain
+Scan Service of CrossChain
 
 #### Software Architecture
 Python3 & Flask
