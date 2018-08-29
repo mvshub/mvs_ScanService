@@ -43,7 +43,7 @@ class Etp(Base):
             'method': method,
             "params": params}
         res = requests.post(
-            self.settings['uri'], json.dumps(req_body), timeout=5)
+            self.settings['uri'], json.dumps(req_body), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
@@ -173,7 +173,7 @@ class Etp(Base):
         return res
 
     def verify_tx(self, tx):
-        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=5)
+        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:

@@ -7,6 +7,7 @@ import decimal
 import binascii
 from models.coin import Coin
 from models.constants import Status
+from models import constants
 
 
 class Eth(Base):
@@ -29,7 +30,8 @@ class Eth(Base):
         data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 83}
         res = requests.post(
             self.settings['uri'], json.dumps(data),
-            headers={'Content-Type': 'application/json'}, timeout=5)
+            headers={'Content-Type': 'application/json'},
+            timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
@@ -56,7 +58,7 @@ class Eth(Base):
         return coins
 
     def get_total_supply(self, token_name=None):
-        res = requests.get('https://www.etherchain.org/api/supply', timeout=5)
+        res = requests.get('https://www.etherchain.org/api/supply', timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
@@ -110,7 +112,7 @@ class Eth(Base):
         return block
 
     def verify_tx(self, tx):
-        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=5)
+        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
