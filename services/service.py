@@ -20,7 +20,7 @@ class MainService(IService):
     def __init__(self, settings):
         self.app = None
         self.settings = settings
-        self.rpcmanager = RpcManager(settings['rpcs'])
+        self.rpcmanager = RpcManager(settings['rpcs'], settings['tokens'])
 
     def setup_db(self):
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://%s:%s@%s:%s/%s' % (

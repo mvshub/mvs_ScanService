@@ -7,8 +7,9 @@ import random
 
 class RpcManager:
 
-    def __init__(self, settings):
+    def __init__(self, settings, tokens):
         self.settings = settings
+        self.tokens = tokens
         self.__id_feeds = collections.defaultdict(list)
         self.__generators = {}
 
@@ -19,7 +20,7 @@ class RpcManager:
 
             idx = feed_type.rfind('.')
             pack, cls = feed_type[:idx], feed_type[idx + 1:]
-            feed_ = getattr(importlib.import_module(pack), cls)(setting)
+            feed_ = getattr(importlib.import_module(pack), cls)(setting, self.tokens)
 
             yield feed_
 

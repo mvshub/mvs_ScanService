@@ -28,8 +28,8 @@ class Eth(Base):
     def make_request(self, method, params=[]):
         data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 83}
         res = requests.post(
-            'http://%s:%s' % (self.settings['host'], self.settings['port']),
-            json.dumps(data), headers={'Content-Type': 'application/json'}, timeout=5)
+            self.settings['uri'], json.dumps(data),
+            headers={'Content-Type': 'application/json'}, timeout=5)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:

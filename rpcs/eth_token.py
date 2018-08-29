@@ -9,11 +9,11 @@ from models.constants import Status
 
 class EthToken(Eth):
 
-    def __init__(self, settings):
+    def __init__(self, settings, tokens):
         Eth.__init__(self, settings)
         self.name = settings['name']
 
-        self.tokens = settings['tokens']
+        self.tokens = tokens
         self.token_names = []
         self.contract_addresses = []
 
@@ -83,7 +83,7 @@ class EthToken(Eth):
         for i in self.tokens:
             if i['name'] == name:
                 return int(i['decimal'])
-        return 0
+        raise CriticalException('decimal config missing: coin={}, token:{}'.format(self.name, name))
 
     def get_transaction(self, txid):
         res = self.make_request('eth_getTransactionByHash', [txid])
