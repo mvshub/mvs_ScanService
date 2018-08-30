@@ -230,9 +230,6 @@ class Etp(Base):
         if tx['token'] is None or tx['token'] not in self.token_names:
             return False
 
-        if self.is_eth_address_invalid(tx['to']):
-            return False
-
         if scan_address in tx['input_addresses']:
             return False
 
