@@ -15,7 +15,8 @@ class AbstractService(IService):
 
     def __init__(self, app, rpcmanager, settings):
         IService.__init__(self, settings)
-        self._interval = settings['interval']
+        self._default_interval = settings['interval']
+        self._interval = 0
         self.rpcmanager = rpcmanager
         self.__tasks = []
         self.services = []
@@ -61,13 +62,19 @@ class AbstractService(IService):
                 while self.__tasks:
                     self.__tasks.pop(0)
                 self.__tasks.extend(new_tasks)
-                time.sleep(self._interval)
+                time.sleep(self.get_interval())
             except Exception as e:
                 Logger.get().error('work exception, {}'.format(e))
                 Logger.get().error('{}'.format(traceback.format_exc()))
 
     def post(self, f):
         self.__tasks.append(f)
+
+    def get_interval(self):
+        return self._interval if self._interval != 0 else self._default_interval
+
+    def set_interval(self, interval):
+        self._interval = interval
 
     def get_best_block_number(self, rpc):
         try:

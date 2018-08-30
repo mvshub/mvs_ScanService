@@ -161,10 +161,14 @@ class ScanBusiness(IBusiness):
     @timeit
     def process_scan(self):
         rpc = self.rpc
-        try:
-            best_block_number = self.service.best_block_number
-        except Exception as e:
-            return True
+        best_block_number = self.service.best_block_number
+
+        # if we are too many blocks late, then sleep less and do more job
+        if ((best_block_number - self.scan_height + 1) > 50):
+            self.service.set_interval(0.1)
+        else:
+            self.service.set_interval(0)
+
         if (best_block_number - self.scan_height + 1) < self.setting['minconf']:
             return True
 
