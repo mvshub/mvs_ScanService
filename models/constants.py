@@ -12,6 +12,9 @@ SWAP_TOKEN_PREFIX = 'ERCT3.'
 
 MAX_SWAP_ASSET_DECIMAL = 8
 
+MIN_FEE_FOR_ETP_DEVELOPER_COMMUNITY = 10**8  # 1 ETP
+
+
 class Status(IntEnum):
     Swap_New = 1
     Swap_Issue = 2

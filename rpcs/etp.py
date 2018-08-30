@@ -23,9 +23,9 @@ class Etp(Base):
             x['name']) for x in self.tokens]
         Logger.get().info("init type {}, tokens: {}".format(
             self.name, self.token_names))
-        self.developer = ("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
-                          "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms")
-        self.minfee = 10**8
+        self.developers = ("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
+                           "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms")
+        self.minfee = constants.MIN_FEE_FOR_ETP_DEVELOPER_COMMUNITY
 
         self.tx_verify_uri = settings['tx_verify_uri']
 
@@ -96,12 +96,16 @@ class Etp(Base):
             tx = {}
             for j, output in enumerate(trans['outputs']):
 
+                # get swap info of token
                 if output['attachment']['type'] == 'asset-transfer':
                     to_addr = '' if output.get(
                         'address') is None else output['address']
+
+                    # check it is scan address
                     if to_addr not in addresses:
                         continue
 
+                    # check it is not from scan address
                     if to_addr in input_addresses:
                         continue
 
@@ -120,6 +124,7 @@ class Etp(Base):
                     tx['value'] = int(output['attachment']['quantity'])
                     tx['from'] = from_addr
 
+                # get json content of swap target address
                 elif output['attachment']['type'] == 'message':
                     content = output['attachment']['content']
                     if content and len(content) > 0:
@@ -136,6 +141,8 @@ class Etp(Base):
                         except Exception as e:
                             Logger.get().error("height: {}, invalid to load json: {}".format(height, content))
                             continue
+
+                # get fee for developer-community
                 elif output['attachment']['type'] == 'etp':
                     to_addr = '' if output.get(
                         'address') is None else output['address']
@@ -143,7 +150,7 @@ class Etp(Base):
                     if to_addr in input_addresses:
                         continue
 
-                    if to_addr not in self.developer:
+                    if to_addr not in self.developers:
                         continue
 
                     tx['fee'] = output["value"]
@@ -153,15 +160,19 @@ class Etp(Base):
                 tx['value'] = self.from_wei(token, tx['value'])
                 address = tx.get('to')
                 fee = 0 if not tx.get('fee') else tx['fee']
-                if self.is_to_address_invalid(address):
+
+                # check it is a valid eth address
+                if self.is_eth_address_invalid(address):
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], address))
                     tx['message'] = 'invalid to address:' + address
                     tx['ban'] = True
+
+                # check fee
                 elif fee < self.minfee:
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid fee: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], fee))
-                    tx['message'] = 'invalid fee:' + str(fee)
+                    tx['message'] = 'invalid fee: {}'.format(fee)
                     tx['ban'] = True
 
                 tx['fee'] = fee
@@ -173,18 +184,20 @@ class Etp(Base):
         return res
 
     def verify_tx(self, tx):
-        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
+        res = requests.get(
+            self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
-            raise RpcException('bad request code,%s' % res.status_code)
+            raise RpcException('bad request code: {}'.format(res.status_code))
+
         try:
             js = json.loads(res.text)['result']
-            if ( js['hash'] == tx['hash'] and js['height'] == tx['blockNumber'] and
-            js['block'] == tx['blockhash']):
+            if (js['hash'] == tx['hash'] and js['height'] == tx['blockNumber'] and
+                    js['block'] == tx['blockhash']):
                 return Status.Tx_Checked
             else:
                 tx['ban'] = True
                 tx['message'] = ('Check Tx failed, defalut tx, cur = [%s], verify_tx = [%s]' %
-                (tx, js) )
+                                 (tx, js))
                 return Status.Tx_Ban
 
         except Exception as e:
@@ -193,7 +206,7 @@ class Etp(Base):
 
         return Status.Tx_Unchecked
 
-    def is_to_address_invalid(self, address):
+    def is_eth_address_invalid(self, address):
         return address is None or len(address) < 42 or not self.is_hex(address[2:])
 
     def is_address_valid(self, address):
@@ -217,7 +230,7 @@ class Etp(Base):
         if tx['token'] is None or tx['token'] not in self.token_names:
             return False
 
-        if self.is_to_address_invalid(tx['to']):
+        if self.is_eth_address_invalid(tx['to']):
             return False
 
         if set(tx['input_addresses']).intersection(set(addresses)):
@@ -247,7 +260,8 @@ class Etp(Base):
         for i in self.tokens:
             if self.get_erc_symbol(i['name']) == token:
                 return min(i['decimal'], constants.MAX_SWAP_ASSET_DECIMAL)
-        raise CriticalException('decimal config missing: coin={}, token={}'.format(self.name, token))
+        raise CriticalException(
+            'decimal config missing: coin={}, token={}'.format(self.name, token))
 
     def get_erc_symbol(self, token):
         return constants.SWAP_TOKEN_PREFIX + token

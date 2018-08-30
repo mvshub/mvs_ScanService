@@ -15,7 +15,8 @@ from decimal import Decimal
 from functools import partial
 from models.swap_ban import Swap_ban
 import json
-from sqlalchemy import and_,or_
+from sqlalchemy import and_, or_
+
 
 class ScanBusiness(IBusiness):
 
@@ -105,7 +106,8 @@ class ScanBusiness(IBusiness):
 
     @timeit
     def commit_ban(self, tx_ban):
-        item = db.session.query(Swap_ban).filter_by(tx_hash=tx_ban['hash']).first()
+        item = db.session.query(Swap_ban).filter_by(
+            tx_hash=tx_ban['hash']).first()
         if item:
             return
         item = Swap_ban()
@@ -123,7 +125,7 @@ class ScanBusiness(IBusiness):
         item.output_index = tx_ban.get('output_index')
         item.create_time = int(time.time() * 1000)
         item.message = tx_ban['message']
-        
+
         db.session.add(item)
         db.session.commit()
 
@@ -132,10 +134,10 @@ class ScanBusiness(IBusiness):
         for bd in bans:
             self.commit_ban(bd)
 
-
     @timeit
     def commit_immature(self, tx_immature):
-        item = db.session.query(Immature).filter_by(tx_hash=tx_immature['hash']).first()
+        item = db.session.query(Immature).filter_by(
+            tx_hash=tx_immature['hash']).first()
         if item:
             return
         item = Immature()
@@ -145,7 +147,7 @@ class ScanBusiness(IBusiness):
         item.tx_hash = tx_immature['hash']
         item.nonce = tx_immature['nonce']
         item.status = tx_immature['status']
-        tx_immature['value']= str(tx_immature['value'])
+        tx_immature['value'] = str(tx_immature['value'])
         item.tx_result = json.dumps(tx_immature)
 
         db.session.add(item)
@@ -155,7 +157,6 @@ class ScanBusiness(IBusiness):
     def commit_immatures(self, immatures):
         for i in immatures:
             self.commit_immature(i)
-    
 
     @timeit
     def process_scan(self):
@@ -177,18 +178,22 @@ class ScanBusiness(IBusiness):
                 binders.append(tx)
                 Logger.get().info(' binder address, from:%s, to:%s' %
                                   (tx['from'], tx['to']))
+
             elif tx.get('ban', False) == True:
                 bans.append(tx)
                 Logger.get().info('new bans found: %s' % tx)
+
             elif rpc.is_swap(tx, self.scan_address):
                 sts = rpc.verify_tx(tx)
                 if sts == int(Status.Tx_Checked):
                     swaps.append(tx)
                     Logger.get().info('new swap found: %s' % tx)
+
                 elif sts == int(Status.Tx_Unchecked):
                     tx['status'] = int(Status.Tx_Unchecked)
                     immatures.append(tx)
                     Logger.get().info('new immatures found: %s' % tx)
+
                 elif sts == int(Status.Tx_Ban):
                     bans.append(tx)
                     Logger.get().info('new bans found: %s' % tx)
@@ -198,7 +203,6 @@ class ScanBusiness(IBusiness):
             swap['height'] = int(swap['blockNumber'])
 
         self.commit_swaps(swaps)
-
 
         self.commit_immatures(immatures)
 
@@ -214,7 +218,9 @@ class ScanBusiness(IBusiness):
         Logger.get().info("> scan {} block {} : {} txs, {} swaps, {} binders".format(
             self.coin, self.scan_height, len(block['txs']), len(swaps), len(binders)))
 
+        # update database in 50 block height intervals
         if swaps or self.scan_height % 50 == 0:
+            # update scan table
             s = db.session.query(Scan).filter_by(coin=self.coin).first()
             if not s:
                 s = Scan()
@@ -223,6 +229,7 @@ class ScanBusiness(IBusiness):
 
             db.session.add(s)
 
+            # update coin table
             coins = rpc.get_coins()
             for c in coins:
                 s = db.session.query(Coin).filter_by(
@@ -246,7 +253,7 @@ class ScanBusiness(IBusiness):
 
         if not results:
             return True
-        
+
         for result in results:
             try:
                 tx = json.loads(result.tx_result)
@@ -265,7 +272,9 @@ class ScanBusiness(IBusiness):
                 db.session.add(result)
                 db.session.commit()
             except Exception as e:
-                Logger.get().info('exception occured while process immature, coin=%s, tx_hash=%s' % (result.coin ,result.tx_hash))
+                Logger.get().info(
+                    'exception occured while process immature, coin=%s, tx_hash=%s' %
+                    (result.coin, result.tx_hash))
                 continue
 
         return True

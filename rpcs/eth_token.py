@@ -83,7 +83,8 @@ class EthToken(Eth):
         for i in self.tokens:
             if i['name'] == name:
                 return int(i['decimal'])
-        raise CriticalException('decimal config missing: coin={}, token:{}'.format(self.name, name))
+        raise CriticalException(
+            'decimal config missing: coin={}, token:{}'.format(self.name, name))
 
     def get_transaction(self, txid):
         res = self.make_request('eth_getTransactionByHash', [txid])
