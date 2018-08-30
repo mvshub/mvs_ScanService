@@ -18,6 +18,9 @@ class Etp(Base):
 
     def __init__(self, settings, tokens):
         Base.__init__(self, settings)
+
+        self.erc20_tokens = json.loads(open('config/erc20_tokens.json').read())
+
         self.name = 'ETP'
         self.tokens = tokens
         self.token_names = [self.get_erc_symbol(
@@ -265,4 +268,6 @@ class Etp(Base):
             'decimal config missing: coin={}, token={}'.format(self.name, token))
 
     def get_erc_symbol(self, token):
+        if token in self.erc20_tokens:
+            return self.erc20_tokens[token]
         return constants.SWAP_TOKEN_PREFIX + token
