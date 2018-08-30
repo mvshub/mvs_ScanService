@@ -148,6 +148,8 @@ class EthToken(Eth):
                     continue
                 tx['swap_address'] = to_addr
                 tx['token'] = self.symbol(contract=tx['to'])
+                if tx['token'] not in self.token_names:
+                    continue
                 value = int('0x' + input_[74:], 16)
                 value = self.from_wei(tx['token'], value)
                 tx['value'] = value

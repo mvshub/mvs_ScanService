@@ -40,7 +40,6 @@ class AbstractService(IService):
             for s in self.services:
                 url = s['uri'] % d['coin']
                 endpoint = s['name']
-                #'%s_%s' % (s['name'], i)
                 Logger.get().info('route {}'.format(url))
                 f = partial(
                     s['f'], self.rpcmanager.get_available_feed(d['rpc']))

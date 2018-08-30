@@ -158,6 +158,8 @@ class Etp(Base):
 
             if tx.get('token') is not None and tx.get('to') is not None:
                 token = tx['token']
+                if token not in self.token_names:
+                    continue
                 tx['value'] = self.from_wei(token, tx['value'])
                 address = tx.get('to')
                 fee = 0 if not tx.get('fee') else tx['fee']
