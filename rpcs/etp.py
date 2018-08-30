@@ -9,6 +9,7 @@ from models.coin import Coin
 from models.constants import Status
 from models import constants
 import time
+import re
 
 
 class Etp(Base):
@@ -162,7 +163,7 @@ class Etp(Base):
                 fee = 0 if not tx.get('fee') else tx['fee']
 
                 # check it is a valid eth address
-                if self.is_eth_address_invalid(address):
+                if not self.is_eth_address_valid(address):
                     Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
                         token, tx['value'], tx['hash'], tx['blockNumber'], address))
                     tx['message'] = 'invalid to address:' + address
@@ -206,8 +207,8 @@ class Etp(Base):
 
         return Status.Tx_Unchecked
 
-    def is_eth_address_invalid(self, address):
-        return address is None or len(address) < 42 or not self.is_hex(address[2:])
+    def is_eth_address_valid(self, address):
+        return address is not None and re.fullmatch(r"^0x[0-9a-f]{40}$", address) is not None
 
     def is_address_valid(self, address):
         if address is None or address == '':
@@ -216,26 +217,27 @@ class Etp(Base):
         res = self.make_request('validateaddress', [address])
         return res['result']['is_valid']
 
-    def is_hex(self, s):
-        if s is None or s == '':
-            return False
-        import re
-        return re.fullmatch(r"^[0-9a-f]+", s) is not None
-
     def is_swap(self, tx, scan_address):
         if 'type' not in tx or tx['type'] != self.name:
             return False
+
         if tx['value'] <= 0:
             return False
-        if tx['token'] is None or tx['token'] not in self.token_names:
+
+        if tx['token'] not in self.token_names:
             return False
 
         if scan_address in tx['input_addresses']:
             return False
 
-        if tx['script'].find('numequalverify') < 0 and tx['swap_address'] == scan_address:
-            return True
-        return False
+        if tx['swap_address'] != scan_address:
+            return False
+
+        # prevent locking tx
+        if 'numequalverify' in tx['script']:
+            return False
+
+        return True
 
     def get_transaction(self, txid):
         result = None
