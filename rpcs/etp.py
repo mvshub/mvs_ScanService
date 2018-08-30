@@ -23,7 +23,7 @@ class Etp(Base):
 
         self.name = 'ETP'
         self.tokens = tokens
-        self.token_names = [self.get_erc_symbol(
+        self.token_names = [self.get_etp_symbol(
             x['name']) for x in self.tokens]
         Logger.get().info("init type {}, tokens: {}".format(
             self.name, self.token_names))
@@ -62,13 +62,14 @@ class Etp(Base):
     def get_coins(self):
         coins = []
         for x in self.tokens:
-            supply = self.get_total_supply(self.get_erc_symbol(x['name']))
+            symbol = self.get_etp_symbol(x['name'])
+            supply = self.get_total_supply(symbol)
             if supply != 0:
                 coin = Coin()
                 coin.name = self.name
-                coin.token = self.get_erc_symbol(x['name'])
+                coin.token = symbol
                 coin.total_supply = supply
-                coin.decimal = self.get_decimal(coin.token)
+                coin.decimal = self.get_decimal(symbol)
                 coin.status = int(Status.Token_Normal)
                 coins.append(coin)
         return coins
@@ -260,14 +261,14 @@ class Etp(Base):
         res = self.make_request('getheight')
         return res['result']
 
-    def get_decimal(self, token):
+    def get_decimal(self, symbol):
         for i in self.tokens:
-            if self.get_erc_symbol(i['name']) == token:
+            if self.get_etp_symbol(i['name']) == symbol:
                 return min(i['decimal'], constants.MAX_SWAP_ASSET_DECIMAL)
         raise CriticalException(
-            'decimal config missing: coin={}, token={}'.format(self.name, token))
+            'decimal config missing: coin={}, token={}'.format(self.name, symbol))
 
-    def get_erc_symbol(self, token):
+    def get_etp_symbol(self, token):
         if token in self.erc20_tokens:
             return self.erc20_tokens[token]
         return constants.SWAP_TOKEN_PREFIX + token
