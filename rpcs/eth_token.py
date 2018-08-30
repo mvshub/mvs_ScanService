@@ -105,7 +105,7 @@ class EthToken(Eth):
             return
         return res
 
-    def is_swap(self, tx, addresses):
+    def is_swap(self, tx, scan_address):
         if 'type' not in tx or tx['type'] != self.name:
             return False
 
@@ -116,7 +116,7 @@ class EthToken(Eth):
 
         return True
 
-    def get_block_by_height(self, height, addresses):
+    def get_block_by_height(self, height, scan_address):
         block = self.make_request(
             'eth_getBlockByNumber', [hex(int(height)), True])
 
@@ -144,7 +144,7 @@ class EthToken(Eth):
                 if len(input_) != 138:
                     continue
                 to_addr = '0x' + input_[34:74]
-                if to_addr not in addresses:
+                if to_addr != scan_address:
                     continue
                 tx['swap_address'] = to_addr
                 tx['token'] = self.symbol(contract=tx['to'])

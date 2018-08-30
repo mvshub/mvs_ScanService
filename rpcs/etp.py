@@ -79,7 +79,7 @@ class Etp(Base):
                 return supply
         return 0
 
-    def get_block_by_height(self, height, addresses):
+    def get_block_by_height(self, height, scan_address):
         res = self.make_request('getblock', [height])
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
@@ -102,7 +102,7 @@ class Etp(Base):
                         'address') is None else output['address']
 
                     # check it is scan address
-                    if to_addr not in addresses:
+                    if to_addr != scan_address:
                         continue
 
                     # check it is not from scan address
@@ -222,7 +222,7 @@ class Etp(Base):
         import re
         return re.fullmatch(r"^[0-9a-f]+", s) is not None
 
-    def is_swap(self, tx, addresses):
+    def is_swap(self, tx, scan_address):
         if 'type' not in tx or tx['type'] != self.name:
             return False
         if tx['value'] <= 0:
@@ -233,10 +233,10 @@ class Etp(Base):
         if self.is_eth_address_invalid(tx['to']):
             return False
 
-        if set(tx['input_addresses']).intersection(set(addresses)):
+        if scan_address in tx['input_addresses']:
             return False
 
-        if tx['script'].find('numequalverify') < 0 and tx['swap_address'] in addresses:
+        if tx['script'].find('numequalverify') < 0 and tx['swap_address'] == scan_address:
             return True
         return False
 

@@ -7,7 +7,7 @@ class Base:
         self.settings = settings
         self.name = ''
 
-    def is_swap(self, name, tx, addresses):
+    def is_swap(self, name, tx, scan_address):
         pass
 
     def is_address_valid(self, address):

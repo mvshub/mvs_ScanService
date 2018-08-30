@@ -70,7 +70,7 @@ class Eth(Base):
 
         return js['value']
 
-    def get_block_by_height(self, height, addresses):
+    def get_block_by_height(self, height, scan_address):
         # Logger.get().info(">>>>>>>>>> ETH : get_block_by_height")
         block = self.make_request('eth_getBlockByNumber', [
                                   hex(int(height)), True])
@@ -94,7 +94,7 @@ class Eth(Base):
                 Logger.get().info('new binder found, from:%s, to:%s' %
                                   (tx['from'], tx['to']))
             else:
-                if tx['to'] not in addresses:
+                if tx['to'] != scan_address:
                     continue
 
                 tx['swap_address'] = tx['to']
@@ -118,7 +118,7 @@ class Eth(Base):
         try:
             js = json.loads(res.text)[0]
             def LSTRIP( x, prefix):
-                if x.startswith(prefix): 
+                if x.startswith(prefix):
                     return x[len(prefix):]
                 return x
             if ( LSTRIP(js['hash'], '0x') == LSTRIP( tx['hash'], '0x') and int(js['blocknumber']) == int(tx['blockNumber']) and
@@ -136,7 +136,7 @@ class Eth(Base):
 
         return Status.Tx_Unchecked
 
-    def is_swap(self, tx, addresses):
+    def is_swap(self, tx, scan_address):
         if 'type' not in tx or tx['type'] != self.name:
             return False
 
