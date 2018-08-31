@@ -66,6 +66,47 @@ cat token_names.txt | xargs -n1 ./start_scan_service.py
 nohup ./start_scan_service.py etp ethtoken >/dev/null 2>&1 &
 ```
 
+#### Config file
+1. service.json
+```
+mysql数据库：
+mysql_host: 地址
+mysql_port: 监听端口
+mysql_user: 用户
+mysql_passwd: 密码
+mysql_db:  数据库名称
+
+rpcs 服务:
+id：唯一标志，不能重复
+name：ETP， ETH，ETHToken
+type：ETP为rpcs.etp.Etp， ETH代币 为 rpcs.eth_token.EthToken，ETH为 rpcs.eth.Eth
+uri:全节点url
+contract_mapaddress：ETPMap 合约地址，用于链接eth地址到etp did或者address
+tx_verify_uri：第三方交易检验url
+
+scans 扫描置换模块：
+interval：扫描数据库间隔
+services 交易模块:
+rpc: rpc id,
+coin: 货币类型，ETH,ETP,ETHToken
+minconf: 最小块高确认,
+scan_address：扫描交易地址
+scan_initial_height:扫描初始块高
+enable:是否启用
+
+
+tokens 监视代币模块：
+name:代币symbol，不能重复
+contract_address:代币创建合约地址
+enable:是否激活
+decimal: 小数位数
+```
+2. erc20_tokens.json
+配置以太坊ERC20，MST 关联资产
+示例：
+"EDU" : "ERC20.EDU"
+ERC20 EDU代币 置换 MST ERC20.EDU资产
+
 #### ETH
 1. install & start
 ```
