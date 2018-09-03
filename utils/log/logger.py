@@ -17,14 +17,31 @@ from os.path import dirname, abspath
 class Logger():
     lock = threading.Lock()
     loggerInstance = None
+    logFilename = "log"
 
     def __init__(self):
         self.ensure_log_dir(abspath("log"))
 
-        configFile = os.path.join(dirname(__file__), "logger.conf")
-        logging.config.fileConfig(configFile, disable_existing_loggers=True)
+        # use config log
+        # configFile = os.path.join(dirname(__file__), "logger.conf")
+        # logging.config.fileConfig(configFile, disable_existing_loggers=True)
 
-        # logging.getLogger('requests').setLevel(logging.ERROR)
+        # use dynamic file name
+        filename = 'log/{}'.format(Logger.logFilename)
+        filehandler = logging.handlers.TimedRotatingFileHandler(
+            filename, 'D', 1, 5, None, False, False)
+        formatter = logging.Formatter(
+            '%(asctime)s [%(levelname)s](%(filename)s:%(lineno)d, %(threadName)s, %(funcName)s): %(message)s')
+        filehandler.setFormatter(formatter)
+
+        log = self.get_by_name("root")
+        for hdlr in log.handlers[:]:    # remove the existing file handlers
+            if isinstance(hdlr, logging.handlers.TimedRotatingFileHandler):
+                log.removeHandler(hdlr)
+        log.addHandler(filehandler)     # set the new handler
+
+        # disable log in requests
+        logging.getLogger('requests').setLevel(logging.ERROR)
 
     def ensure_log_dir(self, logDir):
         if not os.path.exists(logDir):

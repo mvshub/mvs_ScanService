@@ -7,6 +7,7 @@ import sys
 
 
 def main(scan_token_name):
+    Logger.logFilename = "{}_log".format(scan_token_name)
     settings = json.loads(open('config/service.json').read())
     for i in settings['scans']['services']:
         if i['coin'].lower() == scan_token_name.lower():
