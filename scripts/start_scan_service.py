@@ -22,14 +22,23 @@ def main():
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
+    argv = []
+    is_debug = False
+    for arg in sys.argv[1:]:
+        if arg == '-d' or arg == '-D':
+            is_debug = True
+        else:
+            argv.append(arg)
+    option = '-d' if is_debug else ''
+
     fail_count_map = {}
 
     while True:
         print("------------- {} ---------------".format(time.ctime()))
-        for token_name in sys.argv[1:]:
+        for token_name in argv:
             print("check if {} scan service is started".format(token_name))
 
-            cmd = "python3 -u {} {}".format(prog, token_name)
+            cmd = "python3 -u {} {} {}".format(prog, option, token_name)
             found_result = os.popen("ps -ef | grep -v grep | grep '{}'".format(cmd)).read()
 
             if found_result == '':
