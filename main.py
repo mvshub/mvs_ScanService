@@ -10,7 +10,7 @@ def main(scan_token_name, is_debug):
     Logger.logFilename = "{}_log".format(scan_token_name)
 
     setting_filename = 'config/service.json'
-    if is_debug != None:
+    if is_debug:
         setting_filename = 'config/service_debug.json'
     Logger.get().info("Loading config: {}".format(setting_filename))
 
@@ -42,5 +42,5 @@ def main(scan_token_name, is_debug):
 
 if __name__ == '__main__':
     scan_token_name = sys.argv[1]
-    is_debug = sys.argv[2]
+    is_debug = len(sys.argv) > 2
     main(scan_token_name, is_debug)
