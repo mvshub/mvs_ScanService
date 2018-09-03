@@ -43,7 +43,10 @@ def main(scan_token_name, is_debug):
 if __name__ == '__main__':
     scan_token_name = sys.argv[1]
     is_debug = False
-    if len(sys.argv) > 2:
-        if sys.argv[2] == '-d' or sys.argv[2] == '-D':
-            is_debug = True
+    if len(sys.argv) == 3:
+        for arg in sys.argv[1:]:
+            if arg == '-d' or arg == '-D':
+                is_debug = True
+            else:
+                scan_token_name = arg
     main(scan_token_name, is_debug)
