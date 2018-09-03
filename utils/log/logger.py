@@ -1,6 +1,7 @@
 # *-* coding=utf-8 *-*
 
 import os
+import sys
 import threading
 import logging
 import logging.config
@@ -34,11 +35,19 @@ class Logger():
             '%(asctime)s [%(levelname)s](%(filename)s:%(lineno)d, %(threadName)s, %(funcName)s): %(message)s')
         filehandler.setFormatter(formatter)
 
-        log = self.get_by_name("root")
-        for hdlr in log.handlers[:]:    # remove the existing file handlers
+        root_log = self.get_by_name("root")
+        # remove the existing file handlers
+        for hdlr in root_log.handlers[:]:
             if isinstance(hdlr, logging.handlers.TimedRotatingFileHandler):
-                log.removeHandler(hdlr)
-        log.addHandler(filehandler)     # set the new handler
+                root_log.removeHandler(hdlr)
+        root_log.addHandler(filehandler)     # set the new handler
+
+        # add console log
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(formatter)
+        root_log.addHandler(stream_handler)
+
+        root_log.setLevel(logging.DEBUG)
 
         # disable log in requests
         logging.getLogger('requests').setLevel(logging.ERROR)

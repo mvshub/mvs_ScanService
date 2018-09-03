@@ -10,14 +10,14 @@
             "name": "ETP",
             "type": "rpcs.etp.Etp",
             "uri": "http://127.0.0.1:8820/rpc/v3",
-            "tx_verify_uri":"https://explorer.mvs.org/api/tx/"
+            "tx_verify_uri":"https://explorer-testnet.mvs.org/api/tx/"
         },
         {
             "id":2,
             "name":"ETHToken",
             "type":"rpcs.eth_token.EthToken",
             "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
-            "uri": "http://127.0.0.1:8545",
+            "uri": "http://13.57.140.140:8545",
             "tx_verify_uri":"https://www.etherchain.org/api/tx/"
         }
 
@@ -29,15 +29,15 @@
                 "rpc":1,
                 "coin":"ETP",
                 "minconf":12,
-                "scan_address":"MEFiHVNPj7H53YAzU4FP7M61bXn48KqCxL",
-                "scan_initial_height":1463378,
+                "scan_address":"tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm",
+                "scan_initial_height":612821,
                 "enable":false
             },
             {
                 "rpc":2,
                 "coin":"ETHToken",
                 "minconf":12,
-                "scan_address":"0xc1e5fd24fa2b4a3581335fc3f2850f717dd09c86",
+                "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
                 "scan_initial_height":6161426,
                 "enable":false
             }

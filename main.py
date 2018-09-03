@@ -6,9 +6,15 @@ import traceback
 import sys
 
 
-def main(scan_token_name):
+def main(scan_token_name, is_debug):
     Logger.logFilename = "{}_log".format(scan_token_name)
-    settings = json.loads(open('config/service.json').read())
+
+    setting_filename = 'config/service.json'
+    if is_debug != None:
+        setting_filename = 'config/service_debug.json'
+    Logger.get().info("Loading config: {}".format(setting_filename))
+
+    settings = json.loads(open(setting_filename).read())
     for i in settings['scans']['services']:
         if i['coin'].lower() == scan_token_name.lower():
             i['enable'] = True
@@ -36,4 +42,5 @@ def main(scan_token_name):
 
 if __name__ == '__main__':
     scan_token_name = sys.argv[1]
-    main(scan_token_name)
+    is_debug = sys.argv[2]
+    main(scan_token_name, is_debug)
