@@ -36,8 +36,7 @@ def main():
                 fail_count = fail_count_map[token_name] if token_name in fail_count_map else 0
                 print("no, start {} scan service ({})".format(token_name, fail_count))
 
-                log_file = "{}/{}_scan.log".format(log_dir, token_name)
-                os.system("nohup {} > {} 2>&1 &".format(cmd, log_file))
+                os.system("nohup {} > /dev/null 2>&1 &".format(cmd))
 
                 # sending mail when restart process
                 if fail_count == 1 or fail_count == 2:
