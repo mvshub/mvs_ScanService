@@ -1,0 +1,54 @@
+{
+    "mysql_host":"127.0.0.1",
+    "mysql_port":3306,
+    "mysql_user":"root",
+    "mysql_passwd":"123456",
+    "mysql_db":"wallet",
+    "rpcs":[
+        {
+            "id": 1,
+            "name": "ETP",
+            "type": "rpcs.etp.Etp",
+            "uri": "http://127.0.0.1:8820/rpc/v3",
+            "tx_verify_uri":"https://explorer-testnet.mvs.org/api/tx/"
+        },
+        {
+            "id":2,
+            "name":"ETHToken",
+            "type":"rpcs.eth_token.EthToken",
+            "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
+            "uri": "http://13.57.140.140:8545",
+            "tx_verify_uri":"https://www.etherchain.org/api/tx/"
+        }
+
+    ],
+    "scans":{
+        "interval":3,
+        "services":[
+            {
+                "rpc":1,
+                "coin":"ETP",
+                "minconf":12,
+                "scan_address":"tF9pfqY8p6cfjuhDVZu9aXBY1CBprgrpKm",
+                "scan_initial_height":612821,
+                "enable":false
+            },
+            {
+                "rpc":2,
+                "coin":"ETHToken",
+                "minconf":12,
+                "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
+                "scan_initial_height":6161426,
+                "enable":false
+            }
+        ]
+    },
+    "tokens": [
+        {
+            "name":"EDU",
+            "contract_address":"0xf263292e14d9d8ecd55b58dad1f1df825a874b7c",
+            "enable":true,
+            "decimal": 18
+        }
+    ]
+}
