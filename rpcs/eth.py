@@ -19,7 +19,7 @@ class Eth(Base):
         self.contract_mapaddress = settings['contract_mapaddress'].lower()
 
         self.tx_verify_uri = settings['tx_verify_uri']
-        self.ignore_list = settings['ignore_list']
+        self.ignore_list = settings.get('ignore_list')
 
     def start(self):
         self.best_block_number()
@@ -148,7 +148,7 @@ class Eth(Base):
         if tx['token'] is None or tx['token'] != self.name:
             return False
 
-        if tx['from'] is in self.ignore_list:
+        if tx['from'] in self.ignore_list:
             return False
 
         return True
