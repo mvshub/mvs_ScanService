@@ -55,15 +55,15 @@ python3 main.py etp
 python3 main.py ethtoken
 ```
 2. run batch
-cd `scripts`, and use the following ways to run `start_scan_service.py` to start _one or more processes_.
+use the following ways to run `./scripts/start_scan_service.py` to start _one or more processes_.
 This script has function of watching the processes and restart them if it's not running.
 ```bash
-./start_scan_service.py etp
-./start_scan_service.py etp ethtoken
-echo "eth ethtoken" | xargs -n1 ./start_scan_service.py
-cat token_names.txt | xargs -n1 ./start_scan_service.py
+./scripts/start_scan_service.py etp
+./scripts/start_scan_service.py etp ethtoken
+echo "eth ethtoken" | xargs -n1 ./scripts/start_scan_service.py
+cat token_names.txt | xargs -n1 ./scripts/start_scan_service.py
 # use nohup if use remote server
-nohup ./start_scan_service.py etp ethtoken >/dev/null 2>&1 &
+nohup ./scripts/start_scan_service.py etp eth ethtoken >/dev/null 2>&1 &
 ```
 
 #### Config file
