@@ -10,10 +10,9 @@ from models.constants import Status
 class EthToken(Eth):
 
     def __init__(self, settings, tokens):
-        Eth.__init__(self, settings)
+        Eth.__init__(self, settings, tokens)
         self.name = settings['name']
 
-        self.tokens = tokens
         self.token_names = []
         self.contract_addresses = []
 

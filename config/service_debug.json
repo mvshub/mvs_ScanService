@@ -19,6 +19,17 @@
             "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
             "uri": "http://13.57.140.140:8545",
             "tx_verify_uri":"https://www.etherchain.org/api/tx/"
+        },
+        {
+            "id":3,
+            "name":"ETH",
+            "type":"rpcs.eth.Eth",
+            "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
+            "uri": "http://13.57.140.140:8545",
+            "tx_verify_uri":"https://www.etherchain.org/api/tx/",
+            "ignore_list":[
+                "0x7863669296c272ddc4b0bba3badb071087b8ca6c"
+            ]
         }
 
     ],
@@ -36,6 +47,14 @@
             {
                 "rpc":2,
                 "coin":"ETHToken",
+                "minconf":12,
+                "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
+                "scan_initial_height":6161426,
+                "enable":false
+            },
+            {
+                "rpc":3,
+                "coin":"ETH",
                 "minconf":12,
                 "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
                 "scan_initial_height":6161426,
