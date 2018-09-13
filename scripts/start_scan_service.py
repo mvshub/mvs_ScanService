@@ -5,7 +5,7 @@ import os
 import time
 
 sys.path.append('./')
-from utils import mailsend
+from utils import mailer
 
 def main():
 
@@ -54,9 +54,8 @@ def main():
                     body = "{} scan service stopped ({}) and try restart at {}".format(
                         token_name, fail_count, time.ctime())
                     print("{}\n{}".format(subject, body))
-                    # NOTICE: call send_mail after config and testing
-                    #ms = mailsend.MailSending()
-                    #ms.send_mail("scan-service@watchdog.host", subject, body)
+                    symbol = "Scan Service Process Monitor: {}".format(sys.argv[0])
+                    mailer.send_mail(symbol, subject, body)
 
                 fail_count_map[token_name] = fail_count + 1
 
