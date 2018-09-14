@@ -19,7 +19,9 @@ class Eth(Base):
         self.contract_mapaddress = settings['contract_mapaddress'].lower()
 
         self.tx_verify_uri = settings['tx_verify_uri']
-        self.ignore_list = settings.get('ignore_list')
+        self.ignore_list = []
+        if settings.get('ignore_list'):
+            self.ignore_list = settings.get('ignore_list')
 
     def start(self):
         self.best_block_number()
@@ -60,7 +62,8 @@ class Eth(Base):
         return coins
 
     def get_total_supply(self, token_name=None):
-        res = requests.get('https://www.etherchain.org/api/supply', timeout=constants.DEFAULT_REQUEST_TIMEOUT)
+        res = requests.get('https://www.etherchain.org/api/supply',
+                           timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
@@ -114,22 +117,24 @@ class Eth(Base):
         return block
 
     def verify_tx(self, tx):
-        res = requests.get( self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
+        res = requests.get(
+            self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
         if res.status_code != 200:
             raise RpcException('bad request code,%s' % res.status_code)
         try:
             js = json.loads(res.text)[0]
-            def LSTRIP( x, prefix):
+
+            def LSTRIP(x, prefix):
                 if x.startswith(prefix):
                     return x[len(prefix):]
                 return x
-            if ( LSTRIP(js['hash'], '0x') == LSTRIP( tx['hash'], '0x') and int(js['blocknumber']) == int(tx['blockNumber']) and
-            LSTRIP( js['blockhash'], '0x') == LSTRIP( tx['blockHash'], '0x') and int(js['nonce']) == int(tx['nonce'],16) ):
+            if (LSTRIP(js['hash'], '0x') == LSTRIP(tx['hash'], '0x') and int(js['blocknumber']) == int(tx['blockNumber']) and
+                    LSTRIP(js['blockhash'], '0x') == LSTRIP(tx['blockHash'], '0x') and int(js['nonce']) == int(tx['nonce'], 16)):
                 return Status.Tx_Checked
             else:
                 tx['ban'] = True
                 tx['message'] = ('Check Tx failed, defalut tx, cur = [%s], verify_tx = [%s]' %
-                (tx, js) )
+                                 (tx, js))
                 return Status.Tx_Ban
 
         except Exception as e:
@@ -144,7 +149,7 @@ class Eth(Base):
 
         if tx['value'] <= 0:
             return False
-            
+
         if tx['token'] is None or tx['token'] != self.name:
             return False
 
