@@ -28,7 +28,7 @@
             "uri": "http://127.0.0.1:8545",
             "tx_verify_uri":"https://www.etherchain.org/api/tx/",
             "ignore_list":[
-                "0xc1e5fd24fa2b4a3581335fc3f2850f717dd09c86",
+                "0xc1e5fd24fa2b4a3581335fc3f2850f717dd09c86"
             ]
         }
 
