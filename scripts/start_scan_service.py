@@ -6,6 +6,7 @@ import time
 
 sys.path.append('./')
 from utils import mailer
+from utils import date_time
 
 def main():
 
@@ -34,7 +35,7 @@ def main():
     fail_count_map = {}
 
     while True:
-        print("------------- {} ---------------".format(time.ctime()))
+        print("------------- {} ---------------".format(date_time.get_local_time()))
         for token_name in argv:
             print("check if {} scan service is started".format(token_name))
             if is_debug:
@@ -54,7 +55,7 @@ def main():
                     subject = "MVS {} Scan Service Restart Warning ({})".format(
                         token_name, fail_count)
                     body = "{} scan service stopped ({}) and try restart at {}".format(
-                        token_name, fail_count, time.ctime())
+                        token_name, fail_count, date_time.get_local_time())
                     print("{}\n{}".format(subject, body))
                     symbol = "Scan Service Process Monitor: {}".format(sys.argv[0])
                     mailer.send_mail(symbol, subject, body)
