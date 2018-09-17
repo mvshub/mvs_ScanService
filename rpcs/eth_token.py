@@ -20,8 +20,8 @@ class EthToken(Eth):
             address = v['contract_address'].lower()
             self.contracts[address] = v
 
-        Logger.get().info("EthToken: contract_address: {}, contract_mapaddress".format(
-            self.contracts, self.contract_mapaddress))
+        Logger.get().info("EthToken: tokens: {}, contract_mapaddress".format(
+            self.tokens, self.contract_mapaddress))
 
     def start(self):
         Eth.start(self)
@@ -159,6 +159,7 @@ class EthToken(Eth):
                     tx['to'] = None
 
                 elif token_type == 'erc721':
+                    Logger.get().info("================== >> {}".format(tx))
                     # TODO
                     pass
 
