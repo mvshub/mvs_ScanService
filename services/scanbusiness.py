@@ -188,7 +188,10 @@ class ScanBusiness(IBusiness):
                 Logger.get().info('new bans found: %s' % tx)
 
             elif rpc.is_swap(tx, self.scan_address):
-                sts = rpc.verify_tx(tx)
+                # TODO
+                sts = int(Status.Tx_Checked)
+                # sts = rpc.verify_tx(tx)
+
                 if sts == int(Status.Tx_Checked):
                     swaps.append(tx)
                     Logger.get().info('new swap found: %s' % tx)
@@ -261,7 +264,10 @@ class ScanBusiness(IBusiness):
         for result in results:
             try:
                 tx = json.loads(result.tx_result)
-                sts = rpc.verify_tx(tx)
+                # TODO
+                sts = int(Status.Tx_Checked)
+                # sts = rpc.verify_tx(tx)
+
                 if sts == int(Status.Tx_Checked):
                     tx['amount'] = tx['value']
                     tx['height'] = int(tx['blockNumber'])

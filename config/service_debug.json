@@ -16,19 +16,19 @@
             "id":2,
             "name":"ETHToken",
             "type":"rpcs.eth_token.EthToken",
-            "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
-            "uri": "http://13.57.140.140:8545",
+            "contract_mapaddress":"0x0506E5eF752eA1129A7e6ED41DF5E93131beE8A7",
+            "uri": "http://10.10.10.175:8545",
             "tx_verify_uri":"https://www.etherchain.org/api/tx/"
         },
         {
             "id":3,
             "name":"ETH",
             "type":"rpcs.eth.Eth",
-            "contract_mapaddress":"0xa52b0a032139e6303b86cfeb0bb9ae780a610354",
-            "uri": "http://13.57.140.140:8545",
+            "contract_mapaddress":"0x0506E5eF752eA1129A7e6ED41DF5E93131beE8A7",
+            "uri": "http://10.10.10.175:8545",
             "tx_verify_uri":"https://www.etherchain.org/api/tx/",
             "ignore_list":[
-                "0x7863669296c272ddc4b0bba3badb071087b8ca6c"
+                "0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26"
             ]
         }
     ],
@@ -48,16 +48,16 @@
                 "rpc":2,
                 "coin":"ETHToken",
                 "minconf":12,
-                "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
-                "scan_initial_height":6161426,
+                "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
+                "scan_initial_height":0,
                 "enable":false
             },
             {
                 "rpc":3,
                 "coin":"ETH",
                 "minconf":12,
-                "scan_address":"0x7863669296c272ddc4b0bba3badb071087b8ca6c",
-                "scan_initial_height":6161426,
+                "scan_address":"0x2d23fdffe79c9b5769b399ccd0d8c2e46e1aea26",
+                "scan_initial_height":0,
                 "enable":false
             }
         ]
@@ -66,7 +66,7 @@
     "tokens": [
         {
             "name":"EDU",
-            "contract_address":"0xf263292e14d9d8ecd55b58dad1f1df825a874b7c",
+            "contract_address":"0xB5076F81F458e55d0D0952a60091311e95289B52",
             "enable":true,
             "decimal": 18,
             "token_type":"erc20"
