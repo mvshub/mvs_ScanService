@@ -13,7 +13,7 @@ class EthToken(Eth):
         Eth.__init__(self, settings, tokens)
         self.name = settings['name']
 
-        self.token_names = [v['mvs_symbol'] for k, v in self.tokens.items()]
+        self.token_names = [v['name'] for k, v in self.tokens.items()]
 
         self.contracts = {}
         for k, v in self.tokens.items():
