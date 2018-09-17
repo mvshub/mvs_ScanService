@@ -23,9 +23,13 @@ class Etp(Base):
             open('config/token_mapping.json').read())
 
         self.name = 'ETP'
-        self.tokens = tokens
-        self.token_names = [self.get_mvs_symbol(
-            x['name']) for x in self.tokens]
+        self.tokens = {}
+        for token in tokens:
+            name = token['name']
+            token['mvs_symbol'] = self.get_mvs_symbol(name)
+            self.tokens[name] = token
+        self.token_names = [v['mvs_symbol'] for k, v in self.tokens.items()]
+
         Logger.get().info("init type {}, tokens: {}".format(
             self.name, self.token_names))
         self.developers = ("MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
@@ -62,8 +66,8 @@ class Etp(Base):
 
     def get_coins(self):
         coins = []
-        for x in self.tokens:
-            symbol = self.get_mvs_symbol(x['name'])
+        for k, v in self.tokens.items():
+            symbol = v['mvs_symbol']
             supply = self.get_total_supply(symbol)
             if supply != 0:
                 coin = Coin()
@@ -263,8 +267,8 @@ class Etp(Base):
         return res['result']
 
     def get_decimal(self, symbol):
-        for i in self.tokens:
-            if self.get_mvs_symbol(i['name']) == symbol:
+        for k, v in self.tokens.items():
+            if v['mvs_symbol'] == symbol:
                 return min(i['decimal'], constants.MAX_SWAP_ASSET_DECIMAL)
         raise CriticalException(
             'decimal config missing: coin={}, token={}'.format(self.name, symbol))
