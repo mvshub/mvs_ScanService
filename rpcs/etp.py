@@ -19,11 +19,12 @@ class Etp(Base):
     def __init__(self, settings, tokens):
         Base.__init__(self, settings)
 
-        self.erc20_tokens = json.loads(open('config/erc20_tokens.json').read())
+        self.token_mapping = json.loads(
+            open('config/token_mapping.json').read())
 
         self.name = 'ETP'
         self.tokens = tokens
-        self.token_names = [self.get_etp_symbol(
+        self.token_names = [self.get_mvs_symbol(
             x['name']) for x in self.tokens]
         Logger.get().info("init type {}, tokens: {}".format(
             self.name, self.token_names))
@@ -62,7 +63,7 @@ class Etp(Base):
     def get_coins(self):
         coins = []
         for x in self.tokens:
-            symbol = self.get_etp_symbol(x['name'])
+            symbol = self.get_mvs_symbol(x['name'])
             supply = self.get_total_supply(symbol)
             if supply != 0:
                 coin = Coin()
@@ -263,12 +264,12 @@ class Etp(Base):
 
     def get_decimal(self, symbol):
         for i in self.tokens:
-            if self.get_etp_symbol(i['name']) == symbol:
+            if self.get_mvs_symbol(i['name']) == symbol:
                 return min(i['decimal'], constants.MAX_SWAP_ASSET_DECIMAL)
         raise CriticalException(
             'decimal config missing: coin={}, token={}'.format(self.name, symbol))
 
-    def get_etp_symbol(self, token):
-        if token in self.erc20_tokens:
-            return self.erc20_tokens[token]
+    def get_mvs_symbol(self, token):
+        if token in self.token_mapping:
+            return self.token_mapping[token]
         return constants.SWAP_TOKEN_PREFIX + token
