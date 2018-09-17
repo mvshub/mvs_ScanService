@@ -39,6 +39,9 @@ class EthToken(Eth):
     def get_coins(self):
         coins = []
         for k, v in self.tokens.items():
+            if v.get('token_type') != 'erc20':
+                continue
+
             name = v['name']
             supply = self.get_total_supply(name)
             if supply != 0:
@@ -107,8 +110,9 @@ class EthToken(Eth):
         if 'type' not in tx or tx['type'] != self.name:
             return False
 
-        if tx['value'] <= 0:
+        if tx['value'] < 0:
             return False
+
         if tx['token'] is None or tx['token'] not in self.token_names:
             return False
 
@@ -138,7 +142,7 @@ class EthToken(Eth):
             tx['type'] = self.name
             tx['fee'] = 0
             input_ = tx['input']
-
+            
             if tx['to'] in self.contracts:
                 token_setting = self.contracts[tx['to']]
                 token_type = token_setting['token_type']
@@ -149,9 +153,7 @@ class EthToken(Eth):
                     if to_addr != scan_address:
                         continue
                     tx['swap_address'] = to_addr
-                    tx['token'] = self.symbol(contract=tx['to'])
-                    if tx['token'] not in self.token_names:
-                        continue
+                    tx['token'] = token_setting['name']
                     value = int('0x' + input_[74:], 16)
                     value = self.from_wei(tx['token'], value)
                     tx['value'] = value
@@ -159,13 +161,17 @@ class EthToken(Eth):
                     tx['to'] = None
 
                 elif token_type == 'erc721':
-                    Logger.get().info("================== >> {}".format(tx))
-                    # TODO
-                    pass
-
-                else:
-                    continue
-
+                    if len(input_) != 202:
+                        continue
+                    to_addr = '0x' + input_[98:138]
+                    if to_addr != scan_address:
+                        continue
+                    tx['swap_address'] = to_addr
+                    tx['token'] = token_setting['name']
+                    value = int('0x' + input_[138:], 16)
+                    tx['value'] = value
+                    tx['amount'] = value
+                    tx['to'] = None
             else:
                 strLen = int('0x' + input_[134:138], 16)
                 tx['swap_address'] = tx['to']
