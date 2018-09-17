@@ -13,14 +13,9 @@ class EthToken(Eth):
         Eth.__init__(self, settings, tokens)
         self.name = settings['name']
 
-        self.token_names = []
-        self.contract_addresses = []
-
-        self.contract_mapaddress = settings['contract_mapaddress'].lower()
-
-        for x in self.tokens:
-            self.token_names.append(x['name'])
-            self.contract_addresses.append(x['contract_address'].lower())
+        self.token_names = [v['mvs_symbol'] for k, v in self.tokens.items()]
+        self.contract_addresses = [
+            v['contract_address'].lower() for k, v in self.tokens.items()]
 
         Logger.get().info("EthToken: contract_address: {}, contract_mapaddress".format(
             self.contract_addresses, self.contract_mapaddress))
@@ -33,20 +28,21 @@ class EthToken(Eth):
         return False
 
     def get_contractaddress(self, name):
-        for x in self.tokens:
-            if x['name'] == name:
-                return x['contract_address'].lower()
+        if name in self.tokens:
+            settings = self.tokens[name]
+            return settings['contract_address'].lower()
         return None
 
     def get_coins(self):
         coins = []
-        for x in self.tokens:
-            supply = self.get_total_supply(x['name'])
+        for k, v in self.tokens.items():
+            name = v['name']
+            supply = self.get_total_supply(name)
             if supply != 0:
                 coin = Coin()
                 coin.name = self.name
-                coin.token = x['name']
-                coin.total_supply = self.from_wei(x['name'], supply)
+                coin.token = name
+                coin.total_supply = self.from_wei(name, supply)
                 coin.decimal = self.get_decimal(coin.token)
                 coin.status = int(Status.Token_Normal)
                 coins.append(coin)
@@ -79,9 +75,9 @@ class EthToken(Eth):
         return str(binascii.unhexlify(symbol[130:194])[:strLen], "utf-8")
 
     def get_decimal(self, name):
-        for i in self.tokens:
-            if i['name'] == name:
-                return int(i['decimal'])
+        if name in self.tokens:
+            settings = self.tokens[name]
+            return int(settings['decimal'])
         raise CriticalException(
             'decimal config missing: coin={}, token:{}'.format(self.name, name))
 

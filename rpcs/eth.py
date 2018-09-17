@@ -15,7 +15,11 @@ class Eth(Base):
     def __init__(self, settings, tokens):
         Base.__init__(self, settings)
         self.name = 'ETH' if settings.get('name') is None else settings['name']
-        self.tokens = tokens
+
+        self.tokens = {}
+        for token in tokens:
+            name = token['name']
+            self.tokens[name] = token
         self.contract_mapaddress = settings['contract_mapaddress'].lower()
 
         self.tx_verify_uri = settings['tx_verify_uri']
