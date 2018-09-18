@@ -16,6 +16,10 @@ class Etp(Base):
     rpc_version = "2.0"
     rpc_id = 0
 
+    tx_unknown = 0
+    tx_mst_transfer = 1
+    tx_mit_transfer = 2
+
     def __init__(self, settings, tokens):
         Base.__init__(self, settings)
 
@@ -89,108 +93,236 @@ class Etp(Base):
                 return supply
         return 0
 
+    def is_mst_transfer(self, output):
+        return output['attachment']['type'] == 'asset-transfer'
+
+    def is_mit_transfer(self, output):
+        return (output['attachment']['type'] == 'mit' and
+                output['attachment']['status'] == 'transfered')
+
+    def parse_tx_type(self, trans):
+        for j, output in enumerate(trans['outputs']):
+            if self.is_mst_transfer(output):
+                return tx_mst_transfer
+            elif self.is_mit_transfer(output):
+                return tx_mit_transfer
+
+        return tx_unknown
+
+    def parse_target_address(self, output):
+        assert(output['attachment']['type'] == 'message')
+        content = output['attachment']['content']
+        if content and len(content) > 0:
+            try:
+                rst = json.loads(content)
+                if rst == None or 'type' not in rst or 'address' not in rst:
+                    return None
+
+                if rst['type'] == 'ETH':
+                    address = rst['address']
+                    if not address.startswith('0x'):
+                        address = "0x{}".format(address)
+                    return address.lower()
+            except Exception as e:
+                Logger.get().info("height: {}, failed to load json: {}".format(height, content))
+
+        return None
+
+    def process_mst_transfer(self, scan_address, trans, input_addresses, from_addr):
+        tx = {}
+
+        nonce = 0
+        for j, output in enumerate(trans['outputs']):
+
+            # get swap info of token
+            if self.is_mst_transfer(output):
+                to_addr = '' if output.get(
+                    'address') is None else output['address']
+
+                # check it is scan address
+                if to_addr != scan_address:
+                    continue
+
+                # check it is not from scan address
+                if to_addr in input_addresses:
+                    continue
+
+                tx['nonce'] = nonce
+                tx['blockhash'] = block
+                tx['type'] = 'ETP'
+                tx['blockNumber'] = height
+                tx['index'] = i
+                tx['hash'] = trans['hash']
+                tx['swap_address'] = to_addr
+                tx['output_index'] = j
+                tx['time'] = int(timestamp)
+                tx['input_addresses'] = input_addresses
+                tx['script'] = output['script']
+                tx['token'] = output['attachment']['symbol']
+                tx['value'] = int(output['attachment']['quantity'])
+                tx['from'] = from_addr
+
+            # get json content of swap target address
+            elif output['attachment']['type'] == 'message':
+                target_address = self.parse_target_address(output)
+                if target_address:
+                    tx['to'] = target_address
+
+            # get fee for developer-community
+            elif output['attachment']['type'] == 'etp':
+                to_addr = '' if output.get(
+                    'address') is None else output['address']
+
+                if to_addr in input_addresses:
+                    continue
+
+                if to_addr not in self.developers:
+                    continue
+
+                tx['fee'] = output["value"]
+
+        if tx.get('token') is not None and tx.get('to') is not None:
+            token = tx['token']
+            if token not in self.token_names:
+                continue
+            tx['value'] = self.from_wei(token, tx['value'])
+            address = tx.get('to')
+            fee = 0 if not tx.get('fee') else tx['fee']
+
+            # check it is a valid eth address
+            if not self.is_eth_address_valid(address):
+                Logger.get().error("transfer mst {} - {}, height: {}, hash: {}, invalid to: {}".format(
+                    token, tx['value'], tx['hash'], tx['blockNumber'], address))
+                tx['message'] = 'invalid to address:' + address
+                tx['ban'] = True
+
+            # check fee
+            elif fee < self.minfee:
+                Logger.get().error("transfer mst {} - {}, height: {}, hash: {}, invalid fee: {}".format(
+                    token, tx['value'], tx['hash'], tx['blockNumber'], fee))
+                tx['message'] = 'invalid fee: {}'.format(fee)
+                tx['ban'] = True
+
+            tx['fee'] = fee
+            Logger.get().info("transfer mst {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
+                token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
+        else:
+            tx = None
+
+        return tx
+
+    def process_mit_transfer(self, scan_address, trans, input_addresses, from_addr):
+        tx = {}
+
+        nonce = 0
+        for j, output in enumerate(trans['outputs']):
+            if self.is_mit_transfer(output):
+                to_addr = '' if output.get(
+                    'address') is None else output['address']
+
+                # check it is scan address
+                if to_addr != scan_address:
+                    continue
+
+                # check it is not from scan address
+                if to_addr in input_addresses:
+                    continue
+
+                tx['nonce'] = nonce
+                tx['blockhash'] = block
+                tx['type'] = 'ETP'
+                tx['blockNumber'] = height
+                tx['index'] = i
+                tx['hash'] = trans['hash']
+                tx['swap_address'] = to_addr
+                tx['output_index'] = j
+                tx['time'] = int(timestamp)
+                tx['input_addresses'] = input_addresses
+                tx['script'] = output['script']
+                tx['token'] = output['attachment']['symbol']
+                tx['value'] = 1
+                tx['from'] = from_addr
+
+            # get json content of swap target address
+            elif output['attachment']['type'] == 'message':
+                target_address = self.parse_target_address(output)
+                if target_address:
+                    tx['to'] = target_address
+
+            # get fee for developer-community
+            elif output['attachment']['type'] == 'etp':
+                to_addr = '' if output.get(
+                    'address') is None else output['address']
+
+                if to_addr in input_addresses:
+                    continue
+
+                if to_addr not in self.developers:
+                    continue
+
+                tx['fee'] = output["value"]
+
+        if tx.get('token') is not None and tx.get('to') is not None:
+            token = tx['token']
+
+            # TODO check database
+            Logger.get().info("====== TODO check mit token from database.")
+            if token not in self.token_names:
+                continue
+
+            address = tx.get('to')
+            fee = 0 if not tx.get('fee') else tx['fee']
+
+            # check it is a valid eth address
+            if not self.is_eth_address_valid(address):
+                Logger.get().error("transfer mit {} - {}, height: {}, hash: {}, invalid to: {}".format(
+                    token, tx['value'], tx['hash'], tx['blockNumber'], address))
+                tx['message'] = 'invalid to address:' + address
+                tx['ban'] = True
+
+            # check fee
+            elif fee < self.minfee:
+                Logger.get().error("transfer mit {} - {}, height: {}, hash: {}, invalid fee: {}".format(
+                    token, tx['value'], tx['hash'], tx['blockNumber'], fee))
+                tx['message'] = 'invalid fee: {}'.format(fee)
+                tx['ban'] = True
+
+            tx['fee'] = fee
+            Logger.get().info("transfer mit {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
+                token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
+        else:
+            tx = None
+
+        return tx
+
     def get_block_by_height(self, height, scan_address):
         res = self.make_request('getblock', [height])
         timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
         block = res['result']['hash']
-        nonce = 0
 
         txs = []
         for i, trans in enumerate(transactions):
+            tx_type = self.parse_tx_type(trans)
+            if tx_type == tx_unknown:
+                continue
+
             input_addresses = [input_['address'] for input_ in trans[
                 'inputs'] if input_.get('address') is not None]
             input_addresses = list(set(input_addresses))
             from_addr = input_addresses[0] if len(input_addresses) > 0 else ''
 
-            tx = {}
-            for j, output in enumerate(trans['outputs']):
+            if tx_type == tx_mst_transfer:
+                tx = self.process_mst_transfer(
+                    scan_address, trans, input_addresses, from_addr)
+                if tx:
+                    txs.append(tx)
 
-                # get swap info of token
-                if output['attachment']['type'] == 'asset-transfer':
-                    to_addr = '' if output.get(
-                        'address') is None else output['address']
-
-                    # check it is scan address
-                    if to_addr != scan_address:
-                        continue
-
-                    # check it is not from scan address
-                    if to_addr in input_addresses:
-                        continue
-
-                    tx['nonce'] = nonce
-                    tx['blockhash'] = block
-                    tx['type'] = 'ETP'
-                    tx['blockNumber'] = height
-                    tx['index'] = i
-                    tx['hash'] = trans['hash']
-                    tx['swap_address'] = to_addr
-                    tx['output_index'] = j
-                    tx['time'] = int(timestamp)
-                    tx['input_addresses'] = input_addresses
-                    tx['script'] = output['script']
-                    tx['token'] = output['attachment']['symbol']
-                    tx['value'] = int(output['attachment']['quantity'])
-                    tx['from'] = from_addr
-
-                # get json content of swap target address
-                elif output['attachment']['type'] == 'message':
-                    content = output['attachment']['content']
-                    if content and len(content) > 0:
-                        try:
-                            rst = json.loads(content)
-                            if rst == None or 'type' not in rst or 'address' not in rst:
-                                continue
-
-                            if rst['type'] == 'ETH':
-                                address = rst['address']
-                                if not address.startswith('0x'):
-                                    address = "0x{}".format(address)
-                                tx['to'] = address.lower()
-                        except Exception as e:
-                            Logger.get().error("height: {}, invalid to load json: {}".format(height, content))
-                            continue
-
-                # get fee for developer-community
-                elif output['attachment']['type'] == 'etp':
-                    to_addr = '' if output.get(
-                        'address') is None else output['address']
-
-                    if to_addr in input_addresses:
-                        continue
-
-                    if to_addr not in self.developers:
-                        continue
-
-                    tx['fee'] = output["value"]
-
-            if tx.get('token') is not None and tx.get('to') is not None:
-                token = tx['token']
-                if token not in self.token_names:
-                    continue
-                tx['value'] = self.from_wei(token, tx['value'])
-                address = tx.get('to')
-                fee = 0 if not tx.get('fee') else tx['fee']
-
-                # check it is a valid eth address
-                if not self.is_eth_address_valid(address):
-                    Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid to: {}".format(
-                        token, tx['value'], tx['hash'], tx['blockNumber'], address))
-                    tx['message'] = 'invalid to address:' + address
-                    tx['ban'] = True
-
-                # check fee
-                elif fee < self.minfee:
-                    Logger.get().error("transfer {} - {}, height: {}, hash: {}, invalid fee: {}".format(
-                        token, tx['value'], tx['hash'], tx['blockNumber'], fee))
-                    tx['message'] = 'invalid fee: {}'.format(fee)
-                    tx['ban'] = True
-
-                tx['fee'] = fee
-                txs.append(tx)
-                Logger.get().info("transfer {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
-                    token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
+            elif tx_type == tx_mit_transfer:
+                tx = self.process_mit_transfer(
+                    scan_address, trans, input_addresses, from_addr)
+                if tx:
+                    txs.append(tx)
 
         res['txs'] = txs
         return res
