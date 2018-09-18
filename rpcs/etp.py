@@ -6,7 +6,8 @@ import json
 import decimal
 from models import db
 from models.coin import Coin
-from models.constants import Status
+from models.constants import Status, TokenType
+from models.erc721_connect import ERC721_Connect
 from models import constants
 import time
 import re
@@ -30,7 +31,7 @@ class Etp(Base):
         self.tokens = {}
         for token in tokens:
             name = token['name']
-            token['mvs_symbol'] = self.get_mvs_symbol(name)
+            token['mvs_symbol'] = self.get_mvs_symbol(token)
             self.tokens[name] = token
         self.token_names = [v['mvs_symbol'] for k, v in self.tokens.items()]
 
@@ -68,9 +69,16 @@ class Etp(Base):
             pass
         return res.text
 
+    def get_mit(self, symbol):
+        res = self.make_request('getmit', [symbol])
+        return res['result']
+
     def get_coins(self):
         coins = []
         for k, v in self.tokens.items():
+            if v['token_type'] == 'erc721':
+                continue
+
             symbol = v['mvs_symbol']
             supply = self.get_total_supply(symbol)
             if supply != 0:
@@ -100,16 +108,16 @@ class Etp(Base):
         return (output['attachment']['type'] == 'mit' and
                 output['attachment']['status'] == 'transfered')
 
-    def parse_tx_type(self, trans):
+    def parse_token_type(self, trans):
         for j, output in enumerate(trans['outputs']):
             if self.is_mst_transfer(output):
-                return tx_mst_transfer
+                return TokenType.Erc20
             elif self.is_mit_transfer(output):
-                return tx_mit_transfer
+                return TokenType.Erc721
 
-        return tx_unknown
+        return TokenType.Unknown
 
-    def parse_target_address(self, output):
+    def parse_target_address(self, height, output):
         assert(output['attachment']['type'] == 'message')
         content = output['attachment']['content']
         if content and len(content) > 0:
@@ -124,11 +132,12 @@ class Etp(Base):
                         address = "0x{}".format(address)
                     return address.lower()
             except Exception as e:
-                Logger.get().info("height: {}, failed to load json: {}".format(height, content))
+                return None
 
         return None
 
-    def process_mst_transfer(self, scan_address, trans, input_addresses, from_addr):
+    def process_mst_transfer(self, scan_address, trans, input_addresses, from_addr,
+                             height, block_hash, index, timestamp):
         tx = {}
 
         nonce = 0
@@ -148,11 +157,11 @@ class Etp(Base):
                     continue
 
                 tx['nonce'] = nonce
-                tx['blockhash'] = block
+                tx['blockhash'] = block_hash
                 tx['type'] = 'ETP'
                 tx['token_type'] = 0  # mst -> erc20
                 tx['blockNumber'] = height
-                tx['index'] = i
+                tx['index'] = index
                 tx['hash'] = trans['hash']
                 tx['swap_address'] = to_addr
                 tx['output_index'] = j
@@ -165,7 +174,7 @@ class Etp(Base):
 
             # get json content of swap target address
             elif output['attachment']['type'] == 'message':
-                target_address = self.parse_target_address(output)
+                target_address = self.parse_target_address(height, output)
                 if target_address:
                     tx['to'] = target_address
 
@@ -185,7 +194,8 @@ class Etp(Base):
         if tx.get('token') is not None and tx.get('to') is not None:
             token = tx['token']
             if token not in self.token_names:
-                continue
+                return None
+
             tx['value'] = self.from_wei(token, tx['value'])
             address = tx.get('to')
             fee = 0 if not tx.get('fee') else tx['fee']
@@ -212,7 +222,37 @@ class Etp(Base):
 
         return tx
 
-    def process_mit_transfer(self, scan_address, trans, input_addresses, from_addr):
+    def is_swapped_mit(self, symbol):
+        try:
+            # symbol of mit is recorded in database
+            item = db.session.query(ERC721_Connect).filter_by(
+                mit_name=symbol, status=int(Status.Connect_MIT_Transfer)).first()
+            if not item:
+                return False
+
+            # content of mit is valid json
+            mit_info = self.get_mit(symbol)
+            content = mit_info['content']
+            if not content:
+                return False
+
+            rst = json.loads(content)
+            if (rst == None
+                    or 'token' not in rst
+                    or 'token_id' not in rst
+                    or 'hash' not in rst):
+                return False
+
+            # token_id is the same
+            if rst['token_id'] != item.token_id:
+                return False
+
+            return True
+        except Exception as e:
+            return False
+
+    def process_mit_transfer(self, scan_address, trans, input_addresses, from_addr,
+                             height, block_hash, index, timestamp):
         tx = {}
 
         nonce = 0
@@ -230,11 +270,11 @@ class Etp(Base):
                     continue
 
                 tx['nonce'] = nonce
-                tx['blockhash'] = block
+                tx['blockhash'] = block_hash
                 tx['type'] = 'ETP'
                 tx['token_type'] = 1  # mit -> erc721
                 tx['blockNumber'] = height
-                tx['index'] = i
+                tx['index'] = index
                 tx['hash'] = trans['hash']
                 tx['swap_address'] = to_addr
                 tx['output_index'] = j
@@ -247,7 +287,7 @@ class Etp(Base):
 
             # get json content of swap target address
             elif output['attachment']['type'] == 'message':
-                target_address = self.parse_target_address(output)
+                target_address = self.parse_target_address(height, output)
                 if target_address:
                     tx['to'] = target_address
 
@@ -267,30 +307,28 @@ class Etp(Base):
         if tx.get('token') is not None and tx.get('to') is not None:
             token = tx['token']
 
-            # TODO check database
-            Logger.get().info("====== TODO check mit token from database.")
-            if token not in self.token_names:
-                continue
+            if not self.is_swapped_mit(token):
+                return None
 
             address = tx.get('to')
             fee = 0 if not tx.get('fee') else tx['fee']
 
             # check it is a valid eth address
             if not self.is_eth_address_valid(address):
-                Logger.get().error("transfer mit {} - {}, height: {}, hash: {}, invalid to: {}".format(
+                Logger.get().error("transfer mit {}, token_id: {}, height: {}, hash: {}, invalid to: {}".format(
                     token, tx['value'], tx['hash'], tx['blockNumber'], address))
                 tx['message'] = 'invalid to address:' + address
                 tx['ban'] = True
 
             # check fee
             elif fee < self.minfee:
-                Logger.get().error("transfer mit {} - {}, height: {}, hash: {}, invalid fee: {}".format(
+                Logger.get().error("transfer mit {}, token_id: {}, height: {}, hash: {}, invalid fee: {}".format(
                     token, tx['value'], tx['hash'], tx['blockNumber'], fee))
                 tx['message'] = 'invalid fee: {}'.format(fee)
                 tx['ban'] = True
 
             tx['fee'] = fee
-            Logger.get().info("transfer mit {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
+            Logger.get().info("transfer mit {}, token_id: {}, height: {}, hash: {}, from:{}, to: {}".format(
                 token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
         else:
             tx = None
@@ -299,14 +337,14 @@ class Etp(Base):
 
     def get_block_by_height(self, height, scan_address):
         res = self.make_request('getblock', [height])
-        timestamp = res['result']['timestamp']
         transactions = res['result']['transactions']
-        block = res['result']['hash']
+        timestamp = res['result']['timestamp']
+        block_hash = res['result']['hash']
 
         txs = []
         for i, trans in enumerate(transactions):
-            tx_type = self.parse_tx_type(trans)
-            if tx_type == tx_unknown:
+            token_type = self.parse_token_type(trans)
+            if token_type == TokenType.Unknown:
                 continue
 
             input_addresses = [input_['address'] for input_ in trans[
@@ -314,15 +352,17 @@ class Etp(Base):
             input_addresses = list(set(input_addresses))
             from_addr = input_addresses[0] if len(input_addresses) > 0 else ''
 
-            if tx_type == tx_mst_transfer:
+            if token_type == TokenType.Erc20:
                 tx = self.process_mst_transfer(
-                    scan_address, trans, input_addresses, from_addr)
+                    scan_address, trans, input_addresses, from_addr,
+                    height, block_hash, i, timestamp)
                 if tx:
                     txs.append(tx)
 
-            elif tx_type == tx_mit_transfer:
+            elif token_type == TokenType.Erc721:
                 tx = self.process_mit_transfer(
-                    scan_address, trans, input_addresses, from_addr)
+                    scan_address, trans, input_addresses, from_addr,
+                    height, block_hash, i, timestamp)
                 if tx:
                     txs.append(tx)
 
@@ -403,11 +443,15 @@ class Etp(Base):
     def get_decimal(self, symbol):
         for k, v in self.tokens.items():
             if v['mvs_symbol'] == symbol:
-                return min(i['decimal'], constants.MAX_SWAP_ASSET_DECIMAL)
+                return min(v['decimal'], constants.MAX_SWAP_ASSET_DECIMAL)
         raise CriticalException(
             'decimal config missing: coin={}, token={}'.format(self.name, symbol))
 
-    def get_mvs_symbol(self, token):
-        if token in self.token_mapping:
-            return self.token_mapping[token]
-        return constants.SWAP_TOKEN_PREFIX + token
+    def get_mvs_symbol(self, token_setting):
+        name = token_setting['name']
+        if token_setting['token_type'] == 'erc721':
+            return name
+
+        if name in self.token_mapping:
+            return self.token_mapping[name]
+        return constants.SWAP_TOKEN_PREFIX + name
