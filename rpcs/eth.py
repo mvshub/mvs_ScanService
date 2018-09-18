@@ -109,6 +109,7 @@ class Eth(Base):
                 tx['swap_address'] = tx['to']
                 tx['to'] = None
                 tx['token'] = 'ETH'
+                tx['token_type'] = 2
 
             value = int(tx['value'], 16)
             value = self.from_wei(None, value)

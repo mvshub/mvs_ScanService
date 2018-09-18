@@ -150,6 +150,7 @@ class Etp(Base):
                 tx['nonce'] = nonce
                 tx['blockhash'] = block
                 tx['type'] = 'ETP'
+                tx['token_type'] = 0  # mst -> erc20
                 tx['blockNumber'] = height
                 tx['index'] = i
                 tx['hash'] = trans['hash']
@@ -231,6 +232,7 @@ class Etp(Base):
                 tx['nonce'] = nonce
                 tx['blockhash'] = block
                 tx['type'] = 'ETP'
+                tx['token_type'] = 1  # mit -> erc721
                 tx['blockNumber'] = height
                 tx['index'] = i
                 tx['hash'] = trans['hash']

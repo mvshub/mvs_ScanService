@@ -142,7 +142,7 @@ class EthToken(Eth):
             tx['type'] = self.name
             tx['fee'] = 0
             input_ = tx['input']
-            
+
             if tx['to'] in self.contracts:
                 token_setting = self.contracts[tx['to']]
                 token_type = token_setting['token_type']
@@ -152,6 +152,7 @@ class EthToken(Eth):
                     to_addr = '0x' + input_[34:74]
                     if to_addr != scan_address:
                         continue
+                    tx['token_type'] = 0  # erc20 -> mst
                     tx['swap_address'] = to_addr
                     tx['token'] = token_setting['name']
                     value = int('0x' + input_[74:], 16)
@@ -166,6 +167,7 @@ class EthToken(Eth):
                     to_addr = '0x' + input_[98:138]
                     if to_addr != scan_address:
                         continue
+                    tx['token_type'] = 1  # erc721 -> mit
                     tx['swap_address'] = to_addr
                     tx['token'] = token_setting['name']
                     value = int('0x' + input_[138:], 16)
