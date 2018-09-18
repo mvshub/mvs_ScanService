@@ -72,7 +72,7 @@
             "token_type":"erc20"
         },
         {
-            "name":"CarToken",
+            "name":"Car",
             "contract_address":"0x9fAa766fCBcD3BDBAb27681C7Cca6e1a6016B7c5",
             "enable":true,
             "decimal": 1,
