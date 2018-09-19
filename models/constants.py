@@ -15,6 +15,12 @@ MAX_SWAP_ASSET_DECIMAL = 8
 MIN_FEE_FOR_ETP_DEVELOPER_COMMUNITY = 10**8  # 1 ETP
 
 
+class TokenType(IntEnum):
+    Unknown = -1
+    Erc20 = 0
+    Erc721 = 1
+    Eth = 2
+
 class Status(IntEnum):
     Swap_New = 1
     Swap_Issue = 2
@@ -31,6 +37,9 @@ class Status(IntEnum):
     Tx_Checked = 1
     Tx_Ban = 2
 
+    Connect_Mit_Register = 0
+    Connect_MIT_Transfer = 1
+    Connect_MIT_Burn = 2
 
 class Error(IntEnum):
     Success = 0

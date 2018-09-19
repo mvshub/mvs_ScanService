@@ -13,17 +13,15 @@ class EthToken(Eth):
         Eth.__init__(self, settings, tokens)
         self.name = settings['name']
 
-        self.token_names = []
-        self.contract_addresses = []
+        self.token_names = [v['name'] for k, v in self.tokens.items()]
 
-        self.contract_mapaddress = settings['contract_mapaddress'].lower()
+        self.contracts = {}
+        for k, v in self.tokens.items():
+            address = v['contract_address'].lower()
+            self.contracts[address] = v
 
-        for x in self.tokens:
-            self.token_names.append(x['name'])
-            self.contract_addresses.append(x['contract_address'].lower())
-
-        Logger.get().info("EthToken: contract_address: {}, contract_mapaddress".format(
-            self.contract_addresses, self.contract_mapaddress))
+        Logger.get().info("EthToken: tokens: {}, contract_mapaddress".format(
+            self.tokens, self.contract_mapaddress))
 
     def start(self):
         Eth.start(self)
@@ -33,20 +31,24 @@ class EthToken(Eth):
         return False
 
     def get_contractaddress(self, name):
-        for x in self.tokens:
-            if x['name'] == name:
-                return x['contract_address'].lower()
+        if name in self.tokens:
+            token_setting = self.tokens[name]
+            return token_setting['contract_address'].lower()
         return None
 
     def get_coins(self):
         coins = []
-        for x in self.tokens:
-            supply = self.get_total_supply(x['name'])
+        for k, v in self.tokens.items():
+            if v.get('token_type') != 'erc20':
+                continue
+
+            name = v['name']
+            supply = self.get_total_supply(name)
             if supply != 0:
                 coin = Coin()
                 coin.name = self.name
-                coin.token = x['name']
-                coin.total_supply = self.from_wei(x['name'], supply)
+                coin.token = name
+                coin.total_supply = self.from_wei(name, supply)
                 coin.decimal = self.get_decimal(coin.token)
                 coin.status = int(Status.Token_Normal)
                 coins.append(coin)
@@ -79,9 +81,9 @@ class EthToken(Eth):
         return str(binascii.unhexlify(symbol[130:194])[:strLen], "utf-8")
 
     def get_decimal(self, name):
-        for i in self.tokens:
-            if i['name'] == name:
-                return int(i['decimal'])
+        if name in self.tokens:
+            settings = self.tokens[name]
+            return int(settings['decimal'])
         raise CriticalException(
             'decimal config missing: coin={}, token:{}'.format(self.name, name))
 
@@ -108,8 +110,9 @@ class EthToken(Eth):
         if 'type' not in tx or tx['type'] != self.name:
             return False
 
-        if tx['value'] <= 0:
+        if tx['value'] < 0:
             return False
+
         if tx['token'] is None or tx['token'] not in self.token_names:
             return False
 
@@ -122,7 +125,7 @@ class EthToken(Eth):
         block['txs'] = []
         for i, tx in enumerate(block['transactions']):
             if tx['to'] is None \
-                    or (tx['to'] not in self.contract_addresses and tx['to'] != self.contract_mapaddress):
+                    or (tx['to'] not in self.contracts and tx['to'] != self.contract_mapaddress):
                 tx['to'] = 'create contract'
                 continue
 
@@ -139,22 +142,38 @@ class EthToken(Eth):
             tx['type'] = self.name
             tx['fee'] = 0
             input_ = tx['input']
-            if tx['to'] in self.contract_addresses:
-                if len(input_) != 138:
-                    continue
-                to_addr = '0x' + input_[34:74]
-                if to_addr != scan_address:
-                    continue
-                tx['swap_address'] = to_addr
-                tx['token'] = self.symbol(contract=tx['to'])
-                if tx['token'] not in self.token_names:
-                    continue
-                value = int('0x' + input_[74:], 16)
-                value = self.from_wei(tx['token'], value)
-                tx['value'] = value
-                tx['amount'] = value
-                tx['to'] = None
 
+            if tx['to'] in self.contracts:
+                token_setting = self.contracts[tx['to']]
+                token_type = token_setting['token_type']
+                if token_type == 'erc20':
+                    if len(input_) != 138:
+                        continue
+                    to_addr = '0x' + input_[34:74]
+                    if to_addr != scan_address:
+                        continue
+                    tx['token_type'] = 0  # erc20 -> mst
+                    tx['swap_address'] = to_addr
+                    tx['token'] = token_setting['name']
+                    value = int('0x' + input_[74:], 16)
+                    value = self.from_wei(tx['token'], value)
+                    tx['value'] = value
+                    tx['amount'] = value
+                    tx['to'] = None
+
+                elif token_type == 'erc721':
+                    if len(input_) != 202:
+                        continue
+                    to_addr = '0x' + input_[98:138]
+                    if to_addr != scan_address:
+                        continue
+                    tx['token_type'] = 1  # erc721 -> mit
+                    tx['swap_address'] = to_addr
+                    tx['token'] = token_setting['name']
+                    value = int('0x' + input_[138:], 16)
+                    tx['value'] = value
+                    tx['amount'] = value
+                    tx['to'] = None
             else:
                 strLen = int('0x' + input_[134:138], 16)
                 tx['swap_address'] = tx['to']

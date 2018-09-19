@@ -59,6 +59,7 @@ class ScanBusiness(IBusiness):
         item.to_address = swap['to']
         item.from_address = swap['from']
         item.token = swap['token']
+        item.token_type = swap['token_type']
         item.amount = swap['amount']
         item.fee = swap['fee']
         item.block_height = swap['height']
@@ -116,6 +117,7 @@ class ScanBusiness(IBusiness):
         item.to_address = tx_ban['to']
         item.from_address = tx_ban['from']
         item.token = tx_ban['token']
+        item.token_type = tx_ban['token_type']
         item.amount = tx_ban['amount']
         item.fee = tx_ban['fee']
         item.block_height = tx_ban['height']
@@ -188,7 +190,10 @@ class ScanBusiness(IBusiness):
                 Logger.get().info('new bans found: %s' % tx)
 
             elif rpc.is_swap(tx, self.scan_address):
-                sts = rpc.verify_tx(tx)
+                # TODO
+                sts = int(Status.Tx_Checked)
+                # sts = rpc.verify_tx(tx)
+
                 if sts == int(Status.Tx_Checked):
                     swaps.append(tx)
                     Logger.get().info('new swap found: %s' % tx)
@@ -261,7 +266,10 @@ class ScanBusiness(IBusiness):
         for result in results:
             try:
                 tx = json.loads(result.tx_result)
-                sts = rpc.verify_tx(tx)
+                # TODO
+                sts = int(Status.Tx_Checked)
+                # sts = rpc.verify_tx(tx)
+
                 if sts == int(Status.Tx_Checked):
                     tx['amount'] = tx['value']
                     tx['height'] = int(tx['blockNumber'])
