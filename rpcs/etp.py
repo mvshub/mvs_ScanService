@@ -210,12 +210,12 @@ class Etp(Base):
             # check fee
             elif fee < self.minfee:
                 Logger.get().error("transfer mst {} - {}, height: {}, hash: {}, invalid fee: {}".format(
-                    token, tx['value'], tx['hash'], tx['blockNumber'], fee))
+                    token, tx['value'], tx['blockNumber'], tx['hash'], fee))
                 tx['message'] = 'invalid fee: {}'.format(fee)
                 tx['ban'] = True
 
             tx['fee'] = fee
-            Logger.get().info("transfer mst {} - {}, height: {}, hash: {}, from:{}, to: {}".format(
+            Logger.get().info("transfer mst {} - {}, height: {}, hash: {}, from: {}, to: {}".format(
                 token, tx['value'], tx['blockNumber'], tx['hash'], from_addr, address))
         else:
             tx = None
