@@ -27,6 +27,7 @@ class ScanBusiness(IBusiness):
         self.scan_initial_height = setting['scan_initial_height']
         self.scan_height = 0
         self.swaps = {}
+        self.enable_verify_tx = True
 
         if not self.rpc.is_address_valid(self.scan_address):
             info = "invalid scan address: {}".format(self.scan_address)
@@ -190,9 +191,10 @@ class ScanBusiness(IBusiness):
                 Logger.get().info('new bans found: %s' % tx)
 
             elif rpc.is_swap(tx, self.scan_address):
-                # TODO
-                sts = int(Status.Tx_Checked)
-                # sts = rpc.verify_tx(tx)
+                if self.enable_verify_tx:
+                    sts = rpc.verify_tx(tx)
+                else:
+                    sts = int(Status.Tx_Checked)
 
                 if sts == int(Status.Tx_Checked):
                     swaps.append(tx)
@@ -266,9 +268,10 @@ class ScanBusiness(IBusiness):
         for result in results:
             try:
                 tx = json.loads(result.tx_result)
-                # TODO
-                sts = int(Status.Tx_Checked)
-                # sts = rpc.verify_tx(tx)
+                if self.enable_verify_tx:
+                    sts = rpc.verify_tx(tx)
+                else:
+                    sts = int(Status.Tx_Checked)
 
                 if sts == int(Status.Tx_Checked):
                     tx['amount'] = tx['value']
