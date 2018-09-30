@@ -377,8 +377,9 @@ class Etp(Base):
 
         try:
             js = json.loads(res.text)['result']
-            if (js['hash'] == tx['hash'] and js['height'] == tx['blockNumber'] and
-                    js['block'] == tx['blockhash']):
+            if js['hash'] == tx['hash']:
+                tx['blockhash'] = js['block']
+                tx['blockNumber'] = js['height']
                 return Status.Tx_Checked
             else:
                 tx['ban'] = True
