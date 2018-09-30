@@ -370,26 +370,28 @@ class Etp(Base):
         return res
 
     def verify_tx(self, tx):
-        res = requests.get(
-            self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
-        if res.status_code != 200:
-            raise RpcException('bad request code: {}'.format(res.status_code))
-
         try:
+            res = requests.get(
+                self.tx_verify_uri + str(tx['hash']), timeout=constants.DEFAULT_REQUEST_TIMEOUT)
+            if res.status_code != 200:
+                raise RpcException(
+                    'bad request code: {}'.format(res.status_code))
+
             js = json.loads(res.text)['result']
-            if (js['hash'] == tx['hash'] and res.text.find('confirmed_at') != -1):
-                tx['blockhash'] = js['block']
-                tx['blockNumber'] = js['height']
-                return Status.Tx_Checked
+            if js['hash'] == tx['hash']:
+                if res.text.find('confirmed_at') != -1:
+                    tx['blockhash'] = js['block']
+                    tx['blockNumber'] = js['height']
+                    return Status.Tx_Checked
             else:
                 tx['ban'] = True
-                tx['message'] = ('Check Tx failed, defalut tx, cur = [%s], verify_tx = [%s]' %
-                                 (tx, js))
+                tx['message'] = 'Check Tx failed, current: {}, verify_tx: {}'.format(
+                    tx, js)
                 return Status.Tx_Ban
 
         except Exception as e:
             Logger.get().error(
-                'bad response content, failed to parse,%s' % res.text)
+                'Failed to verify_tx: {}, error: {}'.format(tx['hash'], str(e)))
 
         return Status.Tx_Unchecked
 
