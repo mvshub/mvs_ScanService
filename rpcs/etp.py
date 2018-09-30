@@ -377,7 +377,7 @@ class Etp(Base):
 
         try:
             js = json.loads(res.text)['result']
-            if js['hash'] == tx['hash']:
+            if (js['hash'] == tx['hash'] and res.text.find('confirmed_at') != -1):
                 tx['blockhash'] = js['block']
                 tx['blockNumber'] = js['height']
                 return Status.Tx_Checked
