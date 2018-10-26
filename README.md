@@ -63,8 +63,8 @@ This script has function of watching the processes and restart them if it's not 
 ./scripts/start_scan_service.py etp ethtoken
 echo "eth ethtoken" | xargs -n1 ./scripts/start_scan_service.py
 cat token_names.txt | xargs -n1 ./scripts/start_scan_service.py
-# use nohup if use remote server
-nohup ./scripts/start_scan_service.py etp eth ethtoken >/dev/null 2>&1 &
+# used in remote server through ssh
+nohup python3 -u ./scripts/start_scan_service.py etp eth ethtoken 2>&1 &
 ```
 
 #### Config file
