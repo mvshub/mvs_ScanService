@@ -36,6 +36,7 @@ pip3 install flask-migrate
 ```
 
 3. create database 'wallet'
+mysql -u root -p
 ```
 create database wallet charset utf8;
 ```

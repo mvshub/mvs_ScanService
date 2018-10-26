@@ -15,3 +15,7 @@ def get_n_days_before(n):
 
 def get_local_time():
     return datetime.datetime.strftime(get_beijing_datetime(), "%4Y-%2m-%2d %2H:%2M:%2S")
+
+def format_time(time):
+    return "%02d:%02d:%02d" % (
+        time // 10000, time // 100 % 100, time % 100)

@@ -2,6 +2,7 @@ from rpcs.base import Base
 import requests
 from utils.log.logger import Logger
 from utils.exception import RpcException, CriticalException
+from utils import date_time
 import json
 import decimal
 import binascii
@@ -85,39 +86,54 @@ class Eth(Base):
                                   hex(int(height)), True])
         block['txs'] = []
         for i, tx in enumerate(block['transactions']):
-            tx['index'] = i
-            tx['blockNumber'] = int(tx['blockNumber'], 16)
-            tx['blockhash'] = tx['blockHash']
-            tx['time'] = int(block['timestamp'], 16)
-            tx['isBinder'] = False
-            tx['type'] = self.name
             if tx['to'] is None:
                 continue
-            elif tx['to'] == self.contract_mapaddress:
-                input_ = tx['input']
-                strLen = int('0x' + input_[134:138], 16)
-                tx['to'] = str(binascii.unhexlify(
-                    input_[138:])[:strLen], "utf-8")
 
-                tx['isBinder'] = True
-                Logger.get().info('new binder found, from:%s, to:%s' %
-                                  (tx['from'], tx['to']))
-            else:
-                if tx['to'] != scan_address:
-                    continue
+            try:
+                tx['index'] = i
+                tx['blockNumber'] = int(tx['blockNumber'], 16)
+                tx['blockhash'] = tx['blockHash']
+                tx['time'] = int(block['timestamp'], 16)
+                tx['isBinder'] = False
+                tx['type'] = self.name
+                
+                if tx['to'] == self.contract_mapaddress:
+                    input_ = tx['input']
+                    if not input_ or len(input_) < 139:
+                        prt_time = date_time.format_time(tx['time'])
+                        Logger.get().info(
+                            'Ignore bind address tx {}! invalid input data: {}, tx time: {}'.format(
+                                tx['hash'], input_, prt_time))
+                        continue
+                    else:
+                        strLen = int('0x' + input_[134:138], 16)
+                        tx['to'] = str(binascii.unhexlify(
+                            input_[138:])[:strLen], "utf-8")
 
-                tx['swap_address'] = tx['to']
-                tx['to'] = None
-                tx['token'] = 'ETH'
-                tx['token_type'] = 2
+                        tx['isBinder'] = True
+                        Logger.get().info('new binder found, from:%s, to:%s' %
+                                          (tx['from'], tx['to']))
+                else:
+                    if tx['to'] != scan_address:
+                        continue
 
-            value = int(tx['value'], 16)
-            value = self.from_wei(None, value)
-            tx['value'] = value
-            tx['amount'] = value
-            tx['fee'] = 0
+                    tx['swap_address'] = tx['to']
+                    tx['to'] = None
+                    tx['token'] = 'ETH'
+                    tx['token_type'] = 2
 
-            block['txs'].append(tx)
+                value = int(tx['value'], 16)
+                value = self.from_wei(None, value)
+                tx['value'] = value
+                tx['amount'] = value
+                tx['fee'] = 0
+
+                block['txs'].append(tx)
+
+            except Exception as e:
+                Logger.get().error(
+                    'exception occured while process ETH tx {}, error: {}'.format(
+                        tx['hash'], str(e)))
 
         return block
 

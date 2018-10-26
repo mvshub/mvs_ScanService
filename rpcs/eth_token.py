@@ -2,6 +2,7 @@ from rpcs.eth import Eth
 import decimal
 from utils.log.logger import Logger
 from utils.exception import TransactionNotfoundException
+from utils import date_time
 import binascii
 from models.coin import Coin
 from models.constants import Status
@@ -129,60 +130,73 @@ class EthToken(Eth):
                 tx['to'] = 'create contract'
                 continue
 
-            receipt = self.make_request(
-                'eth_getTransactionReceipt', [tx['hash']])
-            if not receipt['logs']:
-                continue
+            try:
+                receipt = self.make_request(
+                    'eth_getTransactionReceipt', [tx['hash']])
+                if not receipt['logs']:
+                    continue
 
-            tx['index'] = i
-            tx['blockNumber'] = int(tx['blockNumber'], 16)
-            tx['time'] = int(block['timestamp'], 16)
-            tx['blockhash'] = tx['blockHash']
-            tx['isBinder'] = False
-            tx['type'] = self.name
-            tx['fee'] = 0
-            input_ = tx['input']
+                tx['index'] = i
+                tx['blockNumber'] = int(tx['blockNumber'], 16)
+                tx['time'] = int(block['timestamp'], 16)
+                tx['blockhash'] = tx['blockHash']
+                tx['isBinder'] = False
+                tx['type'] = self.name
+                tx['fee'] = 0
+                input_ = tx['input']
 
-            if tx['to'] in self.contracts:
-                token_setting = self.contracts[tx['to']]
-                token_type = token_setting['token_type']
-                if token_type == 'erc20':
-                    if len(input_) != 138:
-                        continue
-                    to_addr = '0x' + input_[34:74]
-                    if to_addr != scan_address:
-                        continue
-                    tx['token_type'] = 0  # erc20 -> mst
-                    tx['swap_address'] = to_addr
-                    tx['token'] = token_setting['name']
-                    value = int('0x' + input_[74:], 16)
-                    value = self.from_wei(tx['token'], value)
-                    tx['value'] = value
-                    tx['amount'] = value
-                    tx['to'] = None
+                if tx['to'] in self.contracts:
+                    token_setting = self.contracts[tx['to']]
+                    token_type = token_setting['token_type']
+                    if token_type == 'erc20':
+                        if len(input_) != 138:
+                            continue
+                        to_addr = '0x' + input_[34:74]
+                        if to_addr != scan_address:
+                            continue
+                        tx['token_type'] = 0  # erc20 -> mst
+                        tx['swap_address'] = to_addr
+                        tx['token'] = token_setting['name']
+                        value = int('0x' + input_[74:], 16)
+                        value = self.from_wei(tx['token'], value)
+                        tx['value'] = value
+                        tx['amount'] = value
+                        tx['to'] = None
 
-                elif token_type == 'erc721':
-                    if len(input_) != 202:
+                    elif token_type == 'erc721':
+                        if len(input_) != 202:
+                            continue
+                        to_addr = '0x' + input_[98:138]
+                        if to_addr != scan_address:
+                            continue
+                        tx['token_type'] = 1  # erc721 -> mit
+                        tx['swap_address'] = to_addr
+                        tx['token'] = token_setting['name']
+                        value = int('0x' + input_[138:], 16)
+                        tx['value'] = value
+                        tx['amount'] = value
+                        tx['to'] = None
+                else:
+                    if not input_ or len(input_) < 139:
+                        prt_time = date_time.format_time(tx['time'])
+                        Logger.get().info(
+                            'Ignore eth_token tx {}! invalid input data: {}, tx time: {}'.format(
+                                tx['hash'], input_, prt_time))
                         continue
-                    to_addr = '0x' + input_[98:138]
-                    if to_addr != scan_address:
-                        continue
-                    tx['token_type'] = 1  # erc721 -> mit
-                    tx['swap_address'] = to_addr
-                    tx['token'] = token_setting['name']
-                    value = int('0x' + input_[138:], 16)
-                    tx['value'] = value
-                    tx['amount'] = value
-                    tx['to'] = None
-            else:
-                strLen = int('0x' + input_[134:138], 16)
-                tx['swap_address'] = tx['to']
-                tx['to'] = str(binascii.unhexlify(
-                    input_[138:])[:strLen], "utf-8")
-                tx['isBinder'] = True
-                Logger.get().info('new binder found, from:%s, to:%s' %
-                                  (tx['from'], tx['to']))
 
-            block['txs'].append(tx)
+                    strLen = int('0x' + input_[134:138], 16)
+                    tx['swap_address'] = tx['to']
+                    tx['to'] = str(binascii.unhexlify(
+                        input_[138:])[:strLen], "utf-8")
+                    tx['isBinder'] = True
+                    Logger.get().info('new binder found, from:%s, to:%s' %
+                                      (tx['from'], tx['to']))
+
+                block['txs'].append(tx)
+
+            except Exception as e:
+                Logger.get().error(
+                    'exception occured while process eth_token tx {}, error: {}'.format(
+                        tx['hash'], str(e)))
 
         return block
