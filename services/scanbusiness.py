@@ -175,39 +175,58 @@ class ScanBusiness(IBusiness):
         if (best_block_number - self.scan_height + 1) < self.setting['minconf']:
             return True
 
-        block = rpc.get_block_by_height(self.scan_height, self.scan_address)
+        block_txs = []
         swaps = []
         immatures = []
         binders = []
         bans = []
-        for tx in block['txs']:
-            if tx.get('isBinder', False) == True:
-                binders.append(tx)
-                Logger.get().info(' binder address, from:%s, to:%s' %
-                                  (tx['from'], tx['to']))
 
-            elif tx.get('ban', False) == True:
-                bans.append(tx)
-                Logger.get().info('new bans found: %s' % tx)
+        # get block by height
+        try:
+            block = rpc.get_block_by_height(self.scan_height, self.scan_address)
+            block_txs = block['txs']
+        except Exception as e:
+            Logger.get().error(
+                'Failed to get_block_by_height {}, scan_address: {}, error: {}'.format(
+                    self.scan_height, self.scan_address, str(e)))
+            # RpcException: try get block at the same height again!
+            return True
 
-            elif rpc.is_swap(tx, self.scan_address):
-                if self.enable_verify_tx:
-                    sts = rpc.verify_tx(tx)
-                else:
-                    sts = int(Status.Tx_Checked)
+        # get txs in block
+        for tx in block_txs:
+            try:
+                if tx.get('isBinder', False) == True:
+                    binders.append(tx)
+                    Logger.get().info(' binder address, from:%s, to:%s' %
+                                      (tx['from'], tx['to']))
 
-                if sts == int(Status.Tx_Checked):
-                    swaps.append(tx)
-                    Logger.get().info('new swap found: %s' % tx)
-
-                elif sts == int(Status.Tx_Unchecked):
-                    tx['status'] = int(Status.Tx_Unchecked)
-                    immatures.append(tx)
-                    Logger.get().info('new immatures found: %s' % tx)
-
-                elif sts == int(Status.Tx_Ban):
+                elif tx.get('ban', False) == True:
                     bans.append(tx)
                     Logger.get().info('new bans found: %s' % tx)
+
+                elif rpc.is_swap(tx, self.scan_address):
+                    if self.enable_verify_tx:
+                        sts = rpc.verify_tx(tx)
+                    else:
+                        sts = int(Status.Tx_Checked)
+
+                    if sts == int(Status.Tx_Checked):
+                        swaps.append(tx)
+                        Logger.get().info('new swap found: %s' % tx)
+
+                    elif sts == int(Status.Tx_Unchecked):
+                        tx['status'] = int(Status.Tx_Unchecked)
+                        immatures.append(tx)
+                        Logger.get().info('new immatures found: %s' % tx)
+
+                    elif sts == int(Status.Tx_Ban):
+                        bans.append(tx)
+                        Logger.get().info('new bans found: %s' % tx)
+
+            except Exception as e:
+                Logger.get().error(
+                    'exception occured while process tx {}, error: {}'.format(
+                        str(tx), str(e)))
 
         for swap in swaps:
             swap['amount'] = Decimal(swap['value'])
@@ -227,7 +246,7 @@ class ScanBusiness(IBusiness):
         self.commit_binders(binders)
 
         Logger.get().info("> scan {} block {} : {} txs, {} swaps, {} binders".format(
-            self.coin, self.scan_height, len(block['txs']), len(swaps), len(binders)))
+            self.coin, self.scan_height, len(block_txs), len(swaps), len(binders)))
 
         # update database in 50 block height intervals
         if swaps or self.scan_height % 50 == 0:

@@ -343,28 +343,34 @@ class Etp(Base):
 
         txs = []
         for i, trans in enumerate(transactions):
-            token_type = self.parse_token_type(trans)
-            if token_type == TokenType.Unknown:
-                continue
+            try:
+                token_type = self.parse_token_type(trans)
+                if token_type == TokenType.Unknown:
+                    continue
 
-            input_addresses = [input_['address'] for input_ in trans[
-                'inputs'] if input_.get('address') is not None]
-            input_addresses = list(set(input_addresses))
-            from_addr = input_addresses[0] if len(input_addresses) > 0 else ''
+                input_addresses = [input_['address'] for input_ in trans[
+                    'inputs'] if input_.get('address') is not None]
+                input_addresses = list(set(input_addresses))
+                from_addr = input_addresses[0] if len(input_addresses) > 0 else ''
 
-            if token_type == TokenType.Erc20:
-                tx = self.process_mst_transfer(
-                    scan_address, trans, input_addresses, from_addr,
-                    height, block_hash, i, timestamp)
-                if tx:
-                    txs.append(tx)
+                if token_type == TokenType.Erc20:
+                    tx = self.process_mst_transfer(
+                        scan_address, trans, input_addresses, from_addr,
+                        height, block_hash, i, timestamp)
+                    if tx:
+                        txs.append(tx)
 
-            elif token_type == TokenType.Erc721:
-                tx = self.process_mit_transfer(
-                    scan_address, trans, input_addresses, from_addr,
-                    height, block_hash, i, timestamp)
-                if tx:
-                    txs.append(tx)
+                elif token_type == TokenType.Erc721:
+                    tx = self.process_mit_transfer(
+                        scan_address, trans, input_addresses, from_addr,
+                        height, block_hash, i, timestamp)
+                    if tx:
+                        txs.append(tx)
+
+            except Exception as e:
+                Logger.get().error(
+                    'exception occured while process ETP tx {}, error: {}'.format(
+                        trans['hash'], str(e)))
 
         res['txs'] = txs
         return res
